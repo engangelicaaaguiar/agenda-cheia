@@ -1,0 +1,16 @@
+{
+  "name": "agenda-cheia",
+  "version": "1.0.0",
+  "description": "“Ser a fonte única e confiável de disponibilidade de médicos verificados, sincronizando em tempo real agendas pessoais, plataformas de telemedicina e PEPs das clínicas, eliminando conflitos de horário e maximizando o aproveitamento da agenda médica.”",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
