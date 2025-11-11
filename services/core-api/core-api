@@ -1,0 +1,4 @@
+npm init -y
+npm install express cors
+mkdir src
+touch src/index.js
