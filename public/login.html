@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Agenda Cheia | Login Medico</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./auth.css" />
+  </head>
+  <body>
+    <main class="auth-layout">
+      <section class="brand-panel">
+        <div class="logo-row">
+          <strong class="logo">Agenda Cheia</strong>
+          <span class="security">JWT 15 min + refresh 30 dias</span>
+        </div>
+        <h1>Acesse em segundos para aceitar oportunidades e acompanhar saldo.</h1>
+        <p>
+          Fluxo pensado para medico em rotina intensa: biometria no mobile e magic link no desktop.
+        </p>
+        <div class="state-badges">
+          <span>FaceID ou TouchID</span>
+          <span>PIN de 4 ou 6 digitos</span>
+          <span>Magic link por e-mail/WhatsApp</span>
+        </div>
+      </section>
+
+      <section class="flow-panel">
+        <div class="card">
+          <a class="top-back" href="./index.html">Voltar para landing</a>
+
+          <div class="tabs">
+            <button class="tab active" type="button" data-mode="mobile">Mobile rapido</button>
+            <button class="tab" type="button" data-mode="desktop">Desktop sem senha</button>
+          </div>
+
+          <section id="mobile-login" class="step active">
+            <h2>Entrar com biometria</h2>
+            <p>Agenda Cheia quer usar FaceID/TouchID para entrar no seu painel.</p>
+            <div class="actions">
+              <button class="btn btn-primary" id="biometric-btn" type="button">Usar biometria</button>
+            </div>
+            <p class="inline-status" id="biometric-status"></p>
+
+            <div class="mobile-auth">
+              <strong>Fallback rapido com PIN</strong>
+              <p class="hint">Se a biometria falhar, use seu PIN de 4 ou 6 digitos.</p>
+              <p class="pin-view" id="pin-view">_ _ _ _</p>
+              <div class="pin-grid" id="pin-grid">
+                <button type="button">1</button>
+                <button type="button">2</button>
+                <button type="button">3</button>
+                <button type="button">4</button>
+                <button type="button">5</button>
+                <button type="button">6</button>
+                <button type="button">7</button>
+                <button type="button">8</button>
+                <button type="button">9</button>
+                <button type="button">0</button>
+                <button type="button" data-pin-action="clear">Limpar</button>
+                <button type="button" data-pin-action="send">Entrar</button>
+              </div>
+              <p class="inline-status" id="pin-status"></p>
+            </div>
+          </section>
+
+          <section id="desktop-login" class="step">
+            <h2>Entrar sem senha</h2>
+            <p>Digite e-mail ou CPF. Enviamos magic link e codigo OTP para acesso instantaneo.</p>
+
+            <label for="identity">E-mail ou CPF</label>
+            <input id="identity" name="identity" placeholder="voce@clinica.com.br ou 000.000.000-00" />
+
+            <div class="actions">
+              <button class="btn btn-primary" id="magic-btn" type="button">Entrar sem senha</button>
+            </div>
+
+            <div class="magic-result" id="magic-result">
+              Enviamos um link seguro para voce. Toque nele para entrar instantaneamente.
+            </div>
+            <p class="hint">
+              Se sua senha nao funcionar: "Hmm, essa senha nao confere. Quer que enviemos um link de
+              acesso rapido para seu e-mail?"
+            </p>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script src="./auth.js" defer></script>
+  </body>
+</html>

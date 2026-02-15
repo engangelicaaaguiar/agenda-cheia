@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Agenda Cheia | Onboarding Medico</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./auth.css" />
+  </head>
+  <body>
+    <main class="auth-layout">
+      <section class="brand-panel">
+        <div class="logo-row">
+          <strong class="logo">Agenda Cheia</strong>
+          <span class="security">Seguranca LGPD</span>
+        </div>
+        <h1>Validacao profissional com zero atrito.</h1>
+        <p>
+          Salvamento incremental: voce pode sair e voltar sem perder o progresso do cadastro.
+        </p>
+        <div class="state-badges">
+          <span>OCR + validacao CRM</span>
+          <span>Especialidade principal</span>
+          <span>Agenda semanal inteligente</span>
+        </div>
+      </section>
+
+      <section class="flow-panel">
+        <div class="card">
+          <a class="top-back" href="./index.html">Voltar para landing</a>
+          <div class="progress-head">
+            <strong id="progress-label">Passo 1 de 4</strong>
+            <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+          </div>
+
+          <form id="signup-form">
+            <article class="step active" data-step="1">
+              <h2>Passo 1: validacao profissional</h2>
+              <p>Digite seu WhatsApp e valide seu CRM por foto.</p>
+              <label for="phone">Numero de celular (WhatsApp)</label>
+              <input id="phone" name="phone" placeholder="(11) 99999-9999" required />
+
+              <div class="scan-zone" id="scan-zone">
+                <div class="scan-line"></div>
+                <div>
+                  <strong>Foto do CRM</strong>
+                  <p class="hint">Clique em validar para extracao automatica.</p>
+                </div>
+              </div>
+
+              <div class="actions">
+                <button class="btn btn-primary" type="button" id="run-ocr">Validar CRM</button>
+              </div>
+
+              <div class="ocr-result" id="ocr-result">
+                <strong>Identificamos:</strong>
+                <ul id="ocr-fields"></ul>
+                <div class="actions">
+                  <button class="btn btn-primary" type="button" data-next-step="2">Sim, confirmar</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="step" data-step="2">
+              <h2>Passo 2: especialidades</h2>
+              <p>Adicione especialidades e escolha uma como principal.</p>
+              <label for="specialty-input">Buscar especialidade</label>
+              <input id="specialty-input" placeholder="Ex.: Cardio" />
+              <div class="suggestions" id="specialty-suggestions"></div>
+              <div class="chips" id="specialty-chips"></div>
+              <p class="hint">Toque em "Principal" em um chip para definir prioridade.</p>
+
+              <div class="actions">
+                <button class="btn btn-primary" type="button" data-next-step="3">Continuar</button>
+                <button class="btn btn-secondary" type="button" data-prev-step="1">Voltar</button>
+              </div>
+            </article>
+
+            <article class="step" data-step="3">
+              <h2>Passo 3: disponibilidade</h2>
+              <p>Selecione blocos da agenda semanal. Isso alimenta o match inteligente.</p>
+              <div class="availability-grid" id="availability-grid"></div>
+              <p class="hint">Opcional: importar Google Calendar no proximo ciclo.</p>
+
+              <div class="actions">
+                <button class="btn btn-primary" type="button" data-next-step="4">Finalizar</button>
+                <button class="btn btn-secondary" type="button" data-prev-step="2">Voltar</button>
+              </div>
+            </article>
+
+            <article class="step" data-step="4">
+              <h2>Passo 4: pronto</h2>
+              <p class="success-mark">Tudo pronto, Dr(a). Seu perfil esta visivel para empresas.</p>
+              <p class="inline-status" id="signup-status">Sincronizando sua agenda...</p>
+              <div class="actions">
+                <a class="btn btn-primary" href="./login.html">Ir para login</a>
+              </div>
+            </article>
+          </form>
+        </div>
+      </section>
+    </main>
+    <script src="./auth.js" defer></script>
+  </body>
+</html>
