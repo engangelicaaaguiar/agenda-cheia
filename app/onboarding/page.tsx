@@ -1,30 +1,48 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Upload, X } from "lucide-react";
-import {
-  OnboardingProfileInputSchema,
-  type OnboardingProfileInput,
-} from "../../types/onboarding";
+import { Loader2 } from "lucide-react";
+import { CrmUploader } from "../../components/onboarding/crm-uploader";
+import { Button } from "../../components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
+import { Select } from "../../components/ui/select";
+import { extractCrmData } from "./actions";
 import { saveUserProfileOnboarding } from "../../actions/user-profile";
 
+const OnboardingFormSchema = z.object({
+  fullName: z.string().min(3, "Informe o nome completo."),
+  crm: z
+    .string()
+    .min(4, "CRM invalido.")
+    .regex(/^\d+$/, "CRM deve conter apenas numeros."),
+  crmState: z.string().length(2, "UF deve ter 2 caracteres."),
+  specialty: z.string().min(2, "Selecione uma especialidade."),
+  documentNames: z.array(z.string().min(1)).min(1, "Envie ao menos um documento."),
+});
+
+type OnboardingFormValues = z.infer<typeof OnboardingFormSchema>;
+
 const specialtyOptions = [
-  "Clinica Geral",
-  "Cardiologia",
-  "Psiquiatria",
-  "Dermatologia",
-  "Pediatria",
-  "Ortopedia",
+  { label: "Selecione uma especialidade", value: "" },
+  { label: "Clinica Geral", value: "Clinica Geral" },
+  { label: "Cardiologia", value: "Cardiologia" },
+  { label: "Psiquiatria", value: "Psiquiatria" },
+  { label: "Dermatologia", value: "Dermatologia" },
+  { label: "Pediatria", value: "Pediatria" },
 ];
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [dragActive, setDragActive] = useState(false);
+  const [ocrLoading, setOcrLoading] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [ocrError, setOcrError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const {
     register,
@@ -32,207 +50,143 @@ export default function OnboardingPage() {
     setValue,
     watch,
     formState: { errors },
-  } = useForm<OnboardingProfileInput>({
-    resolver: zodResolver(OnboardingProfileInputSchema),
+  } = useForm<OnboardingFormValues>({
+    resolver: zodResolver(OnboardingFormSchema),
     defaultValues: {
       fullName: "",
       crm: "",
       crmState: "",
-      role: "DOCTOR",
-      specialties: [],
+      specialty: "",
       documentNames: [],
     },
-    mode: "onBlur",
   });
 
   const documentNames = watch("documentNames");
-  const selectedSpecialties = watch("specialties");
 
-  const canSubmit = useMemo(() => !isSubmitting, [isSubmitting]);
+  async function handleExtract(file: File) {
+    setOcrError(null);
+    setOcrLoading(true);
 
-  function setDocumentsFromFiles(fileList: FileList | null) {
-    if (!fileList || fileList.length === 0) return;
-    const names = Array.from(fileList).map((file) => file.name);
-    const merged = Array.from(new Set([...(documentNames || []), ...names]));
-    setValue("documentNames", merged, { shouldValidate: true });
-  }
-
-  function removeDocument(name: string) {
-    const next = (documentNames || []).filter((item) => item !== name);
-    setValue("documentNames", next, { shouldValidate: true });
-  }
-
-  async function onSubmit(data: OnboardingProfileInput) {
-    setSubmitError(null);
-    setIsSubmitting(true);
     try {
-      const result = await saveUserProfileOnboarding(data);
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const result = await extractCrmData(formData);
+
       if (!result.ok) {
-        setSubmitError(result.error);
+        setOcrError(result.error);
+        const names = Array.from(new Set([...(documentNames || []), file.name]));
+        setValue("documentNames", names, { shouldValidate: true });
         return;
       }
+
+      setValue("fullName", result.data.name, { shouldValidate: true, shouldDirty: true });
+      setValue("crm", result.data.crm, { shouldValidate: true, shouldDirty: true });
+      setValue("crmState", result.data.uf, { shouldValidate: true, shouldDirty: true });
+      const names = Array.from(new Set([...(documentNames || []), file.name]));
+      setValue("documentNames", names, { shouldValidate: true });
+    } finally {
+      setOcrLoading(false);
+    }
+  }
+
+  async function onSubmit(values: OnboardingFormValues) {
+    setSaveError(null);
+    setSaveLoading(true);
+
+    try {
+      const result = await saveUserProfileOnboarding({
+        fullName: values.fullName,
+        crm: values.crm,
+        crmState: values.crmState,
+        role: "DOCTOR",
+        specialties: [values.specialty],
+        documentNames: values.documentNames,
+      });
+
+      if (!result.ok) {
+        setSaveError(result.error);
+        return;
+      }
+
       router.push("/dashboard");
     } finally {
-      setIsSubmitting(false);
+      setSaveLoading(false);
     }
   }
 
   return (
     <main className="min-h-screen bg-slate-50 px-6 py-10">
-      <div className="mx-auto max-w-4xl rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 px-8 py-6">
-          <h1 className="text-2xl font-semibold text-slate-900">Onboarding DutyMD</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Complete seu perfil profissional e envie documentos para liberar o dashboard.
-          </p>
-        </div>
+      <Card className="mx-auto max-w-4xl">
+        <CardHeader>
+          <CardTitle>Onboarding Medico - DutyMD</CardTitle>
+          <CardDescription>
+            Envie seu CRM e complete os dados profissionais. O OCR tenta preencher tudo automaticamente.
+          </CardDescription>
+        </CardHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-8 p-8 lg:grid-cols-2">
-          <section className="space-y-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-              Dados Pessoais e Profissionais
-            </h2>
+        <CardContent>
+          <form onSubmit={handleSubmit(onSubmit)} className="grid gap-8 lg:grid-cols-2">
+            <section className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Nome Completo</Label>
+                <Input id="fullName" {...register("fullName")} placeholder="Dr(a). Nome Sobrenome" />
+                {errors.fullName ? <p className="text-xs text-red-600">{errors.fullName.message}</p> : null}
+              </div>
 
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Nome completo</label>
-              <input
-                {...register("fullName")}
-                className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-emerald-500 focus:outline-none"
-                placeholder="Dr(a). Nome Sobrenome"
-              />
-              {errors.fullName ? (
-                <p className="mt-1 text-xs text-red-600">{errors.fullName.message}</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="crm">CRM</Label>
+                  <Input id="crm" {...register("crm")} placeholder="123456" />
+                  {errors.crm ? <p className="text-xs text-red-600">{errors.crm.message}</p> : null}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="crmState">UF</Label>
+                  <Input id="crmState" maxLength={2} {...register("crmState")} placeholder="SP" />
+                  {errors.crmState ? <p className="text-xs text-red-600">{errors.crmState.message}</p> : null}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="specialty">Especialidade</Label>
+                <Select
+                  id="specialty"
+                  options={specialtyOptions}
+                  value={watch("specialty")}
+                  onChange={(event) =>
+                    setValue("specialty", event.target.value, { shouldValidate: true, shouldDirty: true })
+                  }
+                />
+                {errors.specialty ? <p className="text-xs text-red-600">{errors.specialty.message}</p> : null}
+              </div>
+            </section>
+
+            <section className="space-y-3">
+              <CrmUploader onConfirmExtract={handleExtract} isLoading={ocrLoading} />
+
+              {ocrLoading ? (
+                <div className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Analisando seu documento...
+                </div>
               ) : null}
-            </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">CRM</label>
-                <input
-                  {...register("crm")}
-                  className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-emerald-500 focus:outline-none"
-                  placeholder="123456"
-                />
-                {errors.crm ? <p className="mt-1 text-xs text-red-600">{errors.crm.message}</p> : null}
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">UF</label>
-                <input
-                  {...register("crmState")}
-                  maxLength={2}
-                  className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm uppercase focus:border-emerald-500 focus:outline-none"
-                  placeholder="SP"
-                />
-                {errors.crmState ? (
-                  <p className="mt-1 text-xs text-red-600">{errors.crmState.message}</p>
-                ) : null}
-              </div>
-            </div>
-
-            <div>
-              <p className="mb-2 text-sm font-medium text-slate-700">Especialidades</p>
-              <div className="grid grid-cols-2 gap-2">
-                {specialtyOptions.map((specialty) => (
-                  <label
-                    key={specialty}
-                    className="flex items-center gap-2 rounded border border-slate-200 px-3 py-2 text-sm"
-                  >
-                    <input
-                      type="checkbox"
-                      value={specialty}
-                      checked={(selectedSpecialties || []).includes(specialty)}
-                      onChange={(event) => {
-                        const current = selectedSpecialties || [];
-                        const next = event.target.checked
-                          ? [...current, specialty]
-                          : current.filter((item) => item !== specialty);
-                        setValue("specialties", next, { shouldValidate: true });
-                      }}
-                    />
-                    <span>{specialty}</span>
-                  </label>
-                ))}
-              </div>
-              {errors.specialties ? (
-                <p className="mt-1 text-xs text-red-600">{errors.specialties.message as string}</p>
+              {ocrError ? <p className="text-sm text-amber-700">{ocrError}</p> : null}
+              {errors.documentNames ? (
+                <p className="text-xs text-red-600">{errors.documentNames.message as string}</p>
               ) : null}
+            </section>
+
+            <div className="lg:col-span-2 flex items-center justify-end border-t border-slate-200 pt-5">
+              {saveError ? <p className="mr-auto text-sm text-red-600">{saveError}</p> : null}
+              <Button type="submit" disabled={saveLoading || ocrLoading}>
+                {saveLoading ? "Salvando..." : "Salvar e entrar no dashboard"}
+              </Button>
             </div>
-          </section>
-
-          <section className="space-y-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-              Documentos e Anexos
-            </h2>
-
-            <div
-              className={`rounded-xl border-2 border-dashed p-8 text-center transition ${
-                dragActive ? "border-emerald-500 bg-emerald-50" : "border-slate-300 bg-slate-50"
-              }`}
-              onDragOver={(event) => {
-                event.preventDefault();
-                setDragActive(true);
-              }}
-              onDragLeave={(event) => {
-                event.preventDefault();
-                setDragActive(false);
-              }}
-              onDrop={(event) => {
-                event.preventDefault();
-                setDragActive(false);
-                setDocumentsFromFiles(event.dataTransfer.files);
-              }}
-            >
-              <Upload className="mx-auto h-8 w-8 text-slate-500" />
-              <p className="mt-2 text-sm font-medium text-slate-700">
-                Arraste PDFs ou imagens aqui
-              </p>
-              <p className="mt-1 text-xs text-slate-500">CRM digital, documento de identidade, comprovantes</p>
-              <label className="mt-4 inline-block cursor-pointer rounded-md border border-slate-300 bg-white px-3 py-2 text-sm hover:bg-slate-100">
-                Selecionar arquivos
-                <input
-                  type="file"
-                  className="hidden"
-                  multiple
-                  accept=".pdf,image/*"
-                  onChange={(event) => setDocumentsFromFiles(event.target.files)}
-                />
-              </label>
-            </div>
-
-            {(documentNames || []).length > 0 ? (
-              <ul className="space-y-2 rounded-lg border border-slate-200 p-3">
-                {(documentNames || []).map((name) => (
-                  <li key={name} className="flex items-center justify-between text-sm">
-                    <span className="truncate text-slate-700">{name}</span>
-                    <button
-                      type="button"
-                      className="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
-                      onClick={() => removeDocument(name)}
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-
-            {errors.documentNames ? (
-              <p className="text-xs text-red-600">{errors.documentNames.message as string}</p>
-            ) : null}
-          </section>
-
-          <div className="lg:col-span-2 flex items-center justify-between border-t border-slate-200 pt-5">
-            {submitError ? <p className="text-sm text-red-600">{submitError}</p> : <span />}
-            <button
-              type="submit"
-              disabled={!canSubmit}
-              className="h-10 rounded-md bg-emerald-600 px-5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
-            >
-              {isSubmitting ? "Salvando..." : "Salvar e entrar no dashboard"}
-            </button>
-          </div>
-        </form>
-      </div>
+          </form>
+        </CardContent>
+      </Card>
     </main>
   );
 }
