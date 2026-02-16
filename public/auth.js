@@ -49,14 +49,24 @@ function getOrCreateDoctorId() {
   return created;
 }
 
-const ACTIVE_DOCTOR_ID = getOrCreateDoctorId();
+let activeDoctorId = getOrCreateDoctorId();
+
+function setActiveDoctorId(nextId) {
+  if (!nextId || nextId.trim().length < 8) return;
+  activeDoctorId = nextId.trim();
+  try {
+    localStorage.setItem(DOCTOR_ID_STORAGE_KEY, activeDoctorId);
+  } catch {
+    // Ignora falha de escrita no storage.
+  }
+}
 
 const api = async (url, options = {}) => {
   const response = await fetch(url, {
     ...options,
     headers: {
       "Content-Type": "application/json",
-      "x-user-id": ACTIVE_DOCTOR_ID,
+      "x-user-id": activeDoctorId,
       ...(options.headers || {}),
     },
   });
@@ -306,6 +316,59 @@ const googleLoginBtn = document.getElementById("google-login-btn");
 const identityInput = document.getElementById("identity");
 const authHint = document.getElementById("auth-hint");
 
+function parseTokenHash() {
+  const hash = window.location.hash || "";
+  if (!hash.includes("access_token")) return null;
+  const params = new URLSearchParams(hash.replace(/^#/, ""));
+  return {
+    accessToken: params.get("access_token"),
+    refreshToken: params.get("refresh_token"),
+    expiresIn: params.get("expires_in"),
+    tokenType: params.get("token_type"),
+  };
+}
+
+async function bootstrapGoogleDoctor(accessToken) {
+  const response = await fetch("/api/auth/bootstrap-doctor", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || !payload?.doctorId) {
+    throw new Error(payload?.error || "Falha ao preparar cadastro do medico.");
+  }
+
+  return payload.doctorId;
+}
+
+async function handleGoogleReturnIfNeeded() {
+  const url = new URL(window.location.href);
+  const isGoogleReturn = url.searchParams.get("google_return") === "1";
+  if (!isGoogleReturn) return;
+
+  const tokenInfo = parseTokenHash();
+  if (!tokenInfo?.accessToken) {
+    if (authHint) authHint.textContent = "Falha no retorno do Google. Tente novamente.";
+    return;
+  }
+
+  if (authHint) authHint.textContent = "Validando sua conta Google...";
+
+  try {
+    const doctorId = await bootstrapGoogleDoctor(tokenInfo.accessToken);
+    setActiveDoctorId(doctorId);
+    window.location.href = `/cadastro.html?doctorId=${encodeURIComponent(doctorId)}`;
+  } catch (error) {
+    if (authHint) authHint.textContent = error.message || "Falha ao concluir login com Google.";
+  }
+}
+
+handleGoogleReturnIfNeeded();
+
 if (emailLoginBtn && identityInput) {
   emailLoginBtn.addEventListener("click", () => {
     const email = identityInput.value.trim();
@@ -320,6 +383,6 @@ if (emailLoginBtn && identityInput) {
 
 if (googleLoginBtn) {
   googleLoginBtn.addEventListener("click", () => {
-    window.location.href = "/login?audience=doctor&oauth=google";
+    window.location.href = "/api/auth/google-start";
   });
 }

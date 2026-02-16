@@ -31,6 +31,14 @@ function getDoctorId(req) {
   return req.header("x-user-id") || req.body?.doctorId || req.query?.doctorId || "demo-doctor";
 }
 
+function getRequestOrigin(req) {
+  const forwardedProto = req.header("x-forwarded-proto");
+  const forwardedHost = req.header("x-forwarded-host");
+  const host = forwardedHost || req.header("host");
+  const protocol = (forwardedProto || req.protocol || "https").split(",")[0];
+  return `${protocol}://${host}`;
+}
+
 function defaultDoctor(doctorId) {
   const now = new Date().toISOString();
   return {
@@ -124,6 +132,85 @@ async function saveDoctorPatch(doctorId, patch) {
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", supabaseEnabled });
+});
+
+app.get("/api/auth/google-start", (req, res) => {
+  if (!supabaseEnabled || !process.env.SUPABASE_URL) {
+    return res.status(400).json({ error: "Supabase nao configurado para OAuth." });
+  }
+
+  const origin = getRequestOrigin(req);
+  const redirectTo = `${origin}/login.html?google_return=1`;
+  const oauthUrl = new URL("/auth/v1/authorize", process.env.SUPABASE_URL);
+  oauthUrl.searchParams.set("provider", "google");
+  oauthUrl.searchParams.set("flow_type", "implicit");
+  oauthUrl.searchParams.set("redirect_to", redirectTo);
+
+  return res.redirect(oauthUrl.toString());
+});
+
+app.post("/api/auth/bootstrap-doctor", async (req, res, next) => {
+  try {
+    if (!supabaseEnabled || !supabaseAdmin) {
+      return res.status(400).json({ error: "Supabase nao configurado para bootstrap." });
+    }
+
+    const authHeader = req.header("authorization") || "";
+    const bearerPrefix = "Bearer ";
+    const token = authHeader.startsWith(bearerPrefix) ? authHeader.slice(bearerPrefix.length).trim() : null;
+
+    if (!token) {
+      return res.status(401).json({ error: "Token ausente." });
+    }
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabaseAdmin.auth.getUser(token);
+
+    if (userError || !user) {
+      return res.status(401).json({ error: "Token invalido." });
+    }
+
+    await supabaseAdmin.from("profiles").upsert(
+      {
+        id: user.id,
+        role: "DOCTOR",
+        email: user.email || null,
+      },
+      { onConflict: "id" },
+    );
+
+    await supabaseAdmin.from("doctor_wallets").upsert(
+      {
+        doctor_id: user.id,
+        available_balance: 0,
+        pending_balance: 0,
+        currency: "BRL",
+      },
+      { onConflict: "doctor_id" },
+    );
+
+    await supabaseAdmin.from("doctor_compliance").upsert(
+      {
+        doctor_id: user.id,
+        cfm_status: "PENDING",
+        vault_ready: false,
+        ecpf_linked: false,
+      },
+      { onConflict: "doctor_id" },
+    );
+
+    await ensureDoctor(user.id);
+
+    return res.json({
+      ok: true,
+      doctorId: user.id,
+      email: user.email || null,
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 app.get("/api/supabase/ping", async (req, res, next) => {
