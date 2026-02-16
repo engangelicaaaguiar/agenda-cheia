@@ -47,11 +47,17 @@ export default function LoginPage() {
       return;
     }
 
-    const { data: profile } = await supabase
+    let { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .maybeSingle();
+
+    if (audience === "doctor" && !profile?.role) {
+      await fetch("/api/auth/bootstrap-doctor", { method: "POST" });
+      const refreshed = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+      profile = refreshed.data ?? profile;
+    }
 
     const roleValue = typeof profile?.role === "string" ? profile.role : null;
     const target = resolveAudienceRedirect(audience, roleValue);
@@ -116,7 +122,7 @@ export default function LoginPage() {
     setMessage(null);
     const supabase = createClient();
     const redirectNext = encodeURIComponent("/onboarding");
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -124,8 +130,21 @@ export default function LoginPage() {
         data: { role: "DOCTOR" },
       },
     });
+    if (error) {
+      setLoading(false);
+      setMessage(error.message);
+      return;
+    }
+
+    if (data.session) {
+      await fetch("/api/auth/bootstrap-doctor", { method: "POST" });
+      setLoading(false);
+      router.push("/onboarding");
+      return;
+    }
+
     setLoading(false);
-    setMessage(error ? error.message : "Conta criada. Verifique seu e-mail para confirmar e concluir o cadastro.");
+    setMessage("Conta criada. Verifique seu e-mail para confirmar e concluir o cadastro.");
   }
 
   return (

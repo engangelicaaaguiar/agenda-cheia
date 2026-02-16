@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "../../../lib/supabase/server";
 import { isLoginAudience, resolveAudienceRedirect, type LoginAudience } from "../../../lib/auth/login-audience";
+import { bootstrapDoctorAccount } from "../../../lib/auth/bootstrap-doctor";
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
@@ -28,6 +29,14 @@ export async function GET(request: Request) {
 
   if (!user) {
     return NextResponse.redirect(`${origin}/login?error=session_missing`);
+  }
+
+  if (audience === "doctor") {
+    try {
+      await bootstrapDoctorAccount(user);
+    } catch {
+      return NextResponse.redirect(`${origin}/login?error=doctor_bootstrap_failed&audience=doctor`);
+    }
   }
 
   const { data: profile, error: profileError } = await supabase
