@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>DutyMD | Landing para Clinicas e Hospitais</title>
+    <title>DutyMD | Jornada Clinicas e Hospitais</title>
     <meta
       name="description"
-      content="DutyMD para clinicas e hospitais: escala medica, cobertura rapida e operacao com compliance."
+      content="DutyMD para clinicas e hospitais: governanca operacional, cobertura de escala e visibilidade de performance."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -17,63 +17,90 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <header class="hero section clinic-hero">
-      <div class="container top-nav">
+    <header class="site-header">
+      <div class="container nav-wrap">
         <a class="brand" href="./index.html">DutyMD</a>
-        <div class="top-nav-actions">
-          <a class="btn btn-ghost" href="./medicos.html">Medicos</a>
-          <a class="btn btn-ghost" href="/login?audience=platform_admin">Admin</a>
-          <a class="btn btn-primary" href="/login?audience=clinic">Login Clinica</a>
+        <nav class="nav-main" aria-label="Navegacao principal">
+          <a href="./medicos.html">Medicos</a>
+          <a href="./clinicas.html">Clinicas e Hospitais</a>
+          <a class="nav-admin" href="./admin.html">Admin</a>
+        </nav>
+        <div class="nav-cta">
+          <a class="btn btn-ghost" href="/login?audience=clinic">Entrar</a>
+          <a class="btn btn-primary" href="/login?audience=clinic">Solicitar acesso</a>
         </div>
       </div>
-
-      <div class="container hero-grid">
-        <div class="hero-copy reveal">
-          <p class="eyebrow">DutyMD for Providers</p>
-          <h1>Escala medica com menos vacios e mais previsibilidade operacional.</h1>
-          <p class="subhead">
-            Conecte sua demanda a medicos validados, com trilha de compliance, historico auditavel e governanca de acesso.
-          </p>
-          <div class="hero-actions">
-            <a class="btn btn-primary" href="/login?audience=clinic">Login Clinica</a>
-            <a class="btn btn-ghost" href="./index.html">Voltar ao portal geral</a>
-          </div>
-          <p class="micro-proof">Fluxo de login de clinicas ainda em desenvolvimento.</p>
-        </div>
-
-        <div class="card reveal clinic-highlight">
-          <h3>O que sua operacao ganha</h3>
-          <ul>
-            <li>Cobertura de janelas criticas em menos tempo</li>
-            <li>Pool de medicos com credenciais verificadas</li>
-            <li>Controle de pagamentos e status de plantao</li>
-            <li>Base preparada para multi-tenant e RLS</li>
-          </ul>
-        </div>
+      <div class="container persona-submenu">
+        <a class="submenu-item" href="./index.html">Portal Geral</a>
+        <a class="submenu-item" href="./medicos.html">Jornada Medico</a>
+        <a class="submenu-item active" href="./clinicas.html">Jornada Clinica</a>
+        <a class="submenu-item subtle" href="./admin.html">Painel Admin</a>
       </div>
     </header>
 
-    <section class="trust-bar section">
-      <div class="container">
-        <p class="trust-title">DutyMD para operacao hospitalar segura</p>
-        <div class="logo-row">
-          <span>LGPD</span>
-          <span>CFM</span>
-          <span>Auditoria</span>
-          <span>RLS</span>
-          <span>Dashboard Operacional</span>
+    <main>
+      <section class="hero section">
+        <div class="container hero-layout">
+          <div class="hero-copy reveal">
+            <p class="eyebrow">Jornada DutyMD para clinicas e hospitais</p>
+            <h1>Operacao de escala com governanca e resposta rapida.</h1>
+            <p class="subhead">
+              Estruture demanda assistencial com pipeline de plantao, status em tempo real e visao unica da operacao
+              multiprofissional.
+            </p>
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="/login?audience=clinic">Login Clinica</a>
+              <a class="btn btn-ghost" href="./index.html">Voltar ao portal geral</a>
+            </div>
+            <p class="micro-proof">Fluxo de clinica em evolucao: navegacao pronta e autenticacao dedicada em roll-out.</p>
+          </div>
+          <div class="hero-panel reveal">
+            <h2>Capacidades operacionais</h2>
+            <ul>
+              <li><strong>Oferta:</strong> abertura e publicacao de plantoes.</li>
+              <li><strong>Cobertura:</strong> matching com profissionais validados.</li>
+              <li><strong>Execucao:</strong> status de plantao e trilha de check-in.</li>
+              <li><strong>Financeiro:</strong> previsibilidade de repasses.</li>
+            </ul>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <footer class="section footer">
-      <div class="container">
-        <h2>Clinica ou hospital? Entre no canal DutyMD B2B.</h2>
-        <a class="btn btn-primary btn-large" href="/login?audience=clinic">Login Clinica</a>
-        <nav class="legal-links" aria-label="Links principais">
+      <section class="section">
+        <div class="container">
+          <h2>Fluxo operacional da clinica</h2>
+          <div class="cards-grid cards-3">
+            <article class="card reveal">
+              <p class="kicker">1. Planejamento</p>
+              <h3>Monte demanda e requisitos assistenciais</h3>
+              <p>Defina cobertura por especialidade, janelas e prioridade de alocacao.</p>
+            </article>
+            <article class="card reveal">
+              <p class="kicker">2. Execucao</p>
+              <h3>Acompanhe aceite, confirmacao e plantao</h3>
+              <p>Visualize status operacional para antecipar riscos de desassistencia.</p>
+            </article>
+            <article class="card reveal">
+              <p class="kicker">3. Controle</p>
+              <h3>Consolide indicadores e pagamentos</h3>
+              <p>Tenha visao de performance e financeiro em um painel de gestao unico.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer section">
+      <div class="container footer-grid">
+        <div>
+          <p class="brand">DutyMD</p>
+          <p class="footer-text">Governanca operacional para clinicas e hospitais com arquitetura SaaS escalavel.</p>
+        </div>
+        <nav class="legal-links">
           <a href="./index.html">Portal Geral</a>
           <a href="./medicos.html">Landing Medicos</a>
-          <a href="/login?audience=platform_admin">Acesso Admin</a>
+          <a href="/login?audience=clinic">Login Clinica</a>
+          <a href="./admin.html">Painel Admin</a>
         </nav>
       </div>
     </footer>

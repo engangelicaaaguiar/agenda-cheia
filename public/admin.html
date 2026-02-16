@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DutyMD | Portal Admin</title>
+    <meta
+      name="description"
+      content="Area administrativa do DutyMD para governanca de operacao, seguranca e gestao multiperfil."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container nav-wrap">
+        <a class="brand" href="./index.html">DutyMD</a>
+        <nav class="nav-main" aria-label="Navegacao principal">
+          <a href="./medicos.html">Medicos</a>
+          <a href="./clinicas.html">Clinicas e Hospitais</a>
+          <a class="nav-admin" href="./admin.html">Admin</a>
+        </nav>
+        <div class="nav-cta">
+          <a class="btn btn-ghost" href="./index.html">Portal</a>
+          <a class="btn btn-primary" href="/login?audience=platform_admin">Login Admin</a>
+        </div>
+      </div>
+      <div class="container persona-submenu">
+        <a class="submenu-item" href="./index.html">Portal Geral</a>
+        <a class="submenu-item" href="./medicos.html">Jornada Medico</a>
+        <a class="submenu-item" href="./clinicas.html">Jornada Clinica</a>
+        <a class="submenu-item subtle active" href="./admin.html">Painel Admin</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero section admin-hero">
+        <div class="container hero-layout">
+          <div class="hero-copy reveal">
+            <p class="eyebrow">Portal administrativo DutyMD</p>
+            <h1>Governanca central para uma operacao multiperfil confiavel.</h1>
+            <p class="subhead">
+              Visualize risco operacional, comportamento de uso e compliance de ponta a ponta. Fluxo administrativo em
+              evolucao controlada.
+            </p>
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="/login?audience=platform_admin">Entrar como admin</a>
+              <a class="btn btn-ghost" href="./index.html">Voltar ao portal</a>
+            </div>
+          </div>
+          <div class="hero-panel reveal">
+            <h2>Escopo administrativo</h2>
+            <ul>
+              <li>Controle de acesso por audiencia e papel.</li>
+              <li>Visibilidade de adocao por tenant.</li>
+              <li>Supervisao de compliance e auditoria.</li>
+              <li>Monitoramento de saude operacional.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer section">
+      <div class="container footer-grid">
+        <div>
+          <p class="brand">DutyMD</p>
+          <p class="footer-text">Area administrativa discreta para governanca e confiabilidade da plataforma.</p>
+        </div>
+        <nav class="legal-links">
+          <a href="./index.html">Portal Geral</a>
+          <a href="./medicos.html">Landing Medicos</a>
+          <a href="./clinicas.html">Landing Clinicas</a>
+          <a href="/login?audience=platform_admin">Login Admin</a>
+        </nav>
+      </div>
+    </footer>
+
+    <script src="./script.js" defer></script>
+  </body>
+</html>

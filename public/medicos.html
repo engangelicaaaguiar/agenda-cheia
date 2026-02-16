@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>DutyMD | Landing para Medicos</title>
+    <title>DutyMD | Jornada Medico</title>
     <meta
       name="description"
-      content="Transforme horarios vagos em renda extra com autonomia, seguranca e pagamento rapido."
+      content="Jornada do medico no DutyMD: login, credenciamento, agenda de disponibilidade, plantoes e recebimentos."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -17,98 +17,90 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <a class="floating-main-cta" href="/login?audience=doctor">Entrar como Medico</a>
-    <a
-      class="floating-whatsapp"
-      href="https://wa.me/5500000000000"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Suporte via WhatsApp"
-      >WhatsApp</a
-    >
-
-    <header class="hero section">
-      <div class="container top-nav">
+    <header class="site-header">
+      <div class="container nav-wrap">
         <a class="brand" href="./index.html">DutyMD</a>
-        <div class="top-nav-actions">
-          <a class="btn btn-ghost" href="./clinicas.html">Clinicas</a>
-          <a class="btn btn-ghost" href="/login?audience=doctor">Login Medico</a>
-          <a class="btn btn-primary" href="/login?audience=doctor">Primeiro login medico</a>
+        <nav class="nav-main" aria-label="Navegacao principal">
+          <a href="./medicos.html">Medicos</a>
+          <a href="./clinicas.html">Clinicas e Hospitais</a>
+          <a class="nav-admin" href="./admin.html">Admin</a>
+        </nav>
+        <div class="nav-cta">
+          <a class="btn btn-ghost" href="/login?audience=doctor">Entrar</a>
+          <a class="btn btn-primary" href="/login?audience=doctor">Primeiro login</a>
         </div>
       </div>
-      <div class="container hero-grid">
-        <div class="hero-copy reveal">
-          <p class="auth-shortcut">Ja e parceiro? <a href="/login?audience=doctor">Fazer login medico</a></p>
-          <p class="eyebrow">Voce no controle</p>
-          <h1>Transforme seus horarios vagos em renda extra, sem plantoes exaustivos.</h1>
-          <p class="subhead">
-            A plataforma inteligente que conecta sua disponibilidade ociosa a empresas de
-            telemedicina serias. Autonomia total: voce escolhe quando e quanto trabalha.
-          </p>
-          <div class="hero-actions">
-            <a class="btn btn-primary" href="/login?audience=doctor">Primeiro login medico</a>
-            <a class="btn btn-ghost" href="/login?audience=doctor">Login medico</a>
-            <p class="micro-proof">Mais de 500 medicos verificados | Nota 4.9/5</p>
-          </div>
-          <div class="ticker" aria-live="polite">
-            <strong>Oportunidades em tempo real:</strong>
-            <span id="ticker-text">Empresas buscando Cardiologistas agora</span>
-          </div>
-        </div>
-        <div class="hero-visual reveal">
-          <img
-            src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=900&q=80"
-            alt="Medica sorrindo e olhando para um tablet em ambiente confortavel"
-            loading="eager"
-            decoding="async"
-          />
-        </div>
+      <div class="container persona-submenu">
+        <a class="submenu-item" href="./index.html">Portal Geral</a>
+        <a class="submenu-item active" href="./medicos.html">Jornada Medico</a>
+        <a class="submenu-item" href="./clinicas.html">Jornada Clinica</a>
+        <a class="submenu-item subtle" href="./admin.html">Painel Admin</a>
       </div>
     </header>
 
-    <section class="trust-bar section">
-      <div class="container">
-        <p class="trust-title">Tecnologia utilizada por lideres do setor:</p>
-        <div class="logo-row">
-          <span>Vitta</span>
-          <span>Memed</span>
-          <span>LGPD</span>
-          <span>CFM</span>
-          <span>PEP Seguro</span>
-        </div>
-      </div>
-    </section>
-
-    <section class="section compare">
-      <div class="container">
-        <h2>Do caos para a agenda inteligente</h2>
-        <div class="compare-grid">
-          <article class="card pain reveal">
-            <h3>O velho jeito</h3>
+    <main>
+      <section class="hero section">
+        <div class="container hero-layout">
+          <div class="hero-copy reveal">
+            <p class="eyebrow">Jornada DutyMD para medicos</p>
+            <h1>Seu consultorio digital com liquidez previsivel.</h1>
+            <p class="subhead">
+              Da validacao do CRM ao recebimento em carteira digital: um fluxo continuo para transformar capacidade
+              ociosa em receita recorrente.
+            </p>
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="/login?audience=doctor">Entrar como medico</a>
+              <a class="btn btn-ghost" href="/login?audience=doctor">Criar conta</a>
+            </div>
+          </div>
+          <div class="hero-panel reveal">
+            <h2>Tempo para valor</h2>
             <ul>
-              <li>Plantao fixo e cansativo</li>
-              <li>Pagamento com demora e glosa</li>
-              <li>Burocracia de contratacao lenta</li>
+              <li><strong>Login:</strong> e-mail ou Google.</li>
+              <li><strong>Onboarding:</strong> OCR do CRM + compliance.</li>
+              <li><strong>Agenda:</strong> grade semanal com salvamento rapido.</li>
+              <li><strong>Recebimento:</strong> carteira digital e saque D+2.</li>
             </ul>
-          </article>
-          <article class="card solution reveal">
-            <h3>O jeito DutyMD</h3>
-            <ul>
-              <li>Liberdade para atender 1h ou 10h por dia</li>
-              <li>Recebimento em ate 48h apos a consulta</li>
-              <li>IA preenche sua agenda automaticamente</li>
-            </ul>
-          </article>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <footer class="section footer" id="cadastro">
-      <div class="container">
-        <h2>Sua agenda, suas regras. Cadastre-se em 2 minutos.</h2>
-        <a class="btn btn-primary btn-large" href="/login?audience=doctor">Comecar como medico</a>
-        <p class="validation-note">Cadastro com validacao de CRM obrigatoria para todos os medicos.</p>
-        <nav class="legal-links" aria-label="Links legais">
+      <section class="section">
+        <div class="container">
+          <h2>Fluxo completo do medico</h2>
+          <div class="cards-grid cards-4">
+            <article class="card reveal">
+              <p class="kicker">1. Credenciamento</p>
+              <h3>Valide CRM e perfil</h3>
+              <p>Cadastro orientado para reduzir atrito e manter seguranca profissional.</p>
+            </article>
+            <article class="card reveal">
+              <p class="kicker">2. Agenda</p>
+              <h3>Defina disponibilidade recorrente</h3>
+              <p>Controle sua semana em minutos com grade visual e sem sobreposicao.</p>
+            </article>
+            <article class="card reveal">
+              <p class="kicker">3. Plantoes</p>
+              <h3>Aceite oportunidades com contexto</h3>
+              <p>Visualize valor, horario, hospital e status em painel operacional.</p>
+            </article>
+            <article class="card reveal">
+              <p class="kicker">4. Recebimento</p>
+              <h3>Acompanhe saldo e solicite saque</h3>
+              <p>Carteira digital com extrato, previsao e historico de pagamentos.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer section">
+      <div class="container footer-grid">
+        <div>
+          <p class="brand">DutyMD</p>
+          <p class="footer-text">Jornada medica desenhada para autonomia, seguranca e previsibilidade financeira.</p>
+        </div>
+        <nav class="legal-links">
           <a href="./index.html">Portal Geral</a>
           <a href="./clinicas.html">Landing Clinicas</a>
           <a href="/login?audience=doctor">Login Medico</a>

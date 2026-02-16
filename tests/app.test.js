@@ -8,7 +8,7 @@ describe("App routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers["content-type"]).toContain("text/html");
-    expect(response.text).toContain("Selecione seu ambiente de acesso");
+    expect(response.text).toContain("Uma unica plataforma. Tres jornadas coerentes.");
   });
 
   it("deve retornar HTML da jornada de primeiro login", async () => {
