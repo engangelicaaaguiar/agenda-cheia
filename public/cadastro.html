@@ -41,24 +41,30 @@
           <form id="signup-form">
             <article class="step active" data-step="1">
               <h2>Passo 1: validacao profissional</h2>
-              <p>Digite seu WhatsApp e valide seu CRM por foto.</p>
+              <p>Digite seu WhatsApp e envie um documento ou imagem para validacao.</p>
               <label for="phone">Numero de celular (WhatsApp)</label>
               <input id="phone" name="phone" placeholder="(11) 99999-9999" required />
+
+              <label for="crm-file">Documento para validacao (imagem ou PDF)</label>
+              <input id="crm-file" name="crm-file" type="file" accept="image/*,.pdf" required />
+              <p class="hint" id="crm-file-name">Nenhum arquivo selecionado.</p>
 
               <div class="scan-zone" id="scan-zone">
                 <div class="scan-line"></div>
                 <div>
-                  <strong>Foto do CRM</strong>
-                  <p class="hint">Clique em validar para extracao automatica.</p>
+                  <strong>Upload do CRM / Documento</strong>
+                  <p class="hint">Anexe o arquivo e clique em validar para liberar acesso.</p>
                 </div>
               </div>
 
               <div class="actions">
-                <button class="btn btn-primary" type="button" id="run-ocr">Validar CRM</button>
+                <button class="btn btn-primary" type="button" id="run-ocr" disabled>
+                  Validar documento e liberar acesso
+                </button>
               </div>
 
               <div class="ocr-result" id="ocr-result">
-                <strong>Identificamos:</strong>
+                <strong>Documento validado. Identificamos:</strong>
                 <ul id="ocr-fields"></ul>
                 <div class="actions">
                   <button class="btn btn-primary" type="button" data-next-step="2">Sim, confirmar</button>

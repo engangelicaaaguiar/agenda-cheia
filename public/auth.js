@@ -82,6 +82,8 @@ const signupForm = document.getElementById("signup-form");
 if (signupForm) {
   const steps = Array.from(signupForm.querySelectorAll(".step"));
   const phoneInput = document.getElementById("phone");
+  const crmFileInput = document.getElementById("crm-file");
+  const crmFileName = document.getElementById("crm-file-name");
   const runOcrBtn = document.getElementById("run-ocr");
   const scanZone = document.getElementById("scan-zone");
   const ocrResult = document.getElementById("ocr-result");
@@ -97,6 +99,8 @@ if (signupForm) {
   const selectedSpecialties = [];
   const selectedSlots = [];
   let specialtiesCatalog = [];
+  let selectedCrmFile = null;
+  let hasValidatedDocument = false;
 
   const availabilityTemplates = [
     { day_of_week: 1, period: "Manha", start_time: "08:00", end_time: "12:00" },
@@ -178,6 +182,14 @@ if (signupForm) {
     });
   };
 
+  const fileToDataUrl = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
+      reader.onerror = () => reject(new Error("Nao foi possivel ler o arquivo enviado."));
+      reader.readAsDataURL(file);
+    });
+
   const saveStep = async (step) => {
     const payload = { step, data: {} };
 
@@ -231,17 +243,55 @@ if (signupForm) {
     });
   });
 
+  if (crmFileInput && crmFileName && runOcrBtn) {
+    crmFileInput.addEventListener("change", () => {
+      const file = crmFileInput.files && crmFileInput.files[0] ? crmFileInput.files[0] : null;
+      selectedCrmFile = file;
+      hasValidatedDocument = false;
+      if (ocrResult) ocrResult.classList.remove("show");
+
+      if (!file) {
+        crmFileName.textContent = "Nenhum arquivo selecionado.";
+        runOcrBtn.disabled = true;
+        return;
+      }
+
+      const fileSizeMb = file.size / (1024 * 1024);
+      if (fileSizeMb > 8) {
+        crmFileName.textContent = "Arquivo maior que 8MB. Envie um arquivo menor.";
+        crmFileName.style.color = "#b91c1c";
+        selectedCrmFile = null;
+        crmFileInput.value = "";
+        runOcrBtn.disabled = true;
+        return;
+      }
+
+      crmFileName.textContent = `Arquivo selecionado: ${file.name}`;
+      crmFileName.style.color = "";
+      runOcrBtn.disabled = false;
+      runOcrBtn.textContent = "Validar documento e liberar acesso";
+    });
+  }
+
   if (runOcrBtn && scanZone && ocrResult) {
     runOcrBtn.addEventListener("click", async () => {
+      if (!selectedCrmFile) {
+        alert("Selecione um documento ou imagem para validar.");
+        return;
+      }
+
       runOcrBtn.disabled = true;
       runOcrBtn.textContent = "Validando...";
       scanZone.classList.add("scanning");
       try {
+        const imageBase64 = await fileToDataUrl(selectedCrmFile);
         const result = await api("/api/onboarding/validate-crm", {
           method: "POST",
           body: JSON.stringify({
-            imageBase64: "data:image/mock;base64,AAAABBBB",
+            imageBase64,
             phone: phoneInput?.value?.trim() || "",
+            fileName: selectedCrmFile.name,
+            mimeType: selectedCrmFile.type || "application/octet-stream",
           }),
         });
         const extracted = result.extracted || {};
@@ -253,11 +303,18 @@ if (signupForm) {
           `;
         }
         ocrResult.classList.add("show");
+        hasValidatedDocument = true;
       } catch (error) {
         alert(error.message);
       } finally {
         scanZone.classList.remove("scanning");
-        runOcrBtn.textContent = "OCR concluido";
+        if (hasValidatedDocument) {
+          runOcrBtn.textContent = "Documento validado";
+          runOcrBtn.disabled = true;
+        } else {
+          runOcrBtn.textContent = "Validar documento e liberar acesso";
+          runOcrBtn.disabled = false;
+        }
       }
     });
   }
