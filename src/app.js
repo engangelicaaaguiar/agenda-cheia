@@ -158,8 +158,25 @@ app.get("/api/auth/google-start", async (req, res) => {
     }
 
     const payload = await probe.text();
-    if (payload.includes("provider is not enabled")) {
+    let normalizedMessage = payload;
+
+    try {
+      const parsed = JSON.parse(payload);
+      normalizedMessage = `${parsed?.msg || ""} ${parsed?.error_code || ""}`.trim();
+    } catch {
+      // Mantem o payload textual.
+    }
+
+    if (normalizedMessage.includes("provider is not enabled")) {
       return res.redirect("/login.html?oauth_error=google_provider_not_enabled");
+    }
+
+    if (normalizedMessage.includes("missing OAuth secret")) {
+      return res.redirect("/login.html?oauth_error=google_missing_oauth_secret");
+    }
+
+    if (normalizedMessage.toLowerCase().includes("redirect") && normalizedMessage.toLowerCase().includes("invalid")) {
+      return res.redirect("/login.html?oauth_error=google_invalid_redirect_url");
     }
 
     return res.redirect("/login.html?oauth_error=google_oauth_unavailable");

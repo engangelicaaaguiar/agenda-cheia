@@ -331,6 +331,10 @@ function showOAuthErrorIfPresent() {
     supabase_not_configured: "OAuth Google indisponivel: conexao Supabase nao configurada.",
     google_provider_not_enabled:
       "Google login nao esta habilitado no Supabase. Ative o provider Google no painel de Auth.",
+    google_missing_oauth_secret:
+      "Google OAuth sem Client Secret no Supabase. Preencha Client ID e Client Secret no provider Google.",
+    google_invalid_redirect_url:
+      "Redirect URL invalida no Google/Supabase. Revise as URLs autorizadas e tente novamente.",
     google_oauth_unavailable: "Nao foi possivel iniciar o login Google agora. Tente novamente.",
     oauth_network_error: "Falha de rede ao iniciar o login Google. Tente novamente.",
   };
