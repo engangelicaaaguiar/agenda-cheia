@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "../../lib/supabase/client";
 import {
@@ -15,10 +15,12 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const audienceParam = searchParams.get("audience");
+  const emailPrefill = searchParams.get("email");
+  const oauthProvider = searchParams.get("oauth");
   const audience: LoginAudience = isLoginAudience(audienceParam) ? audienceParam : "doctor";
 
   const audienceConfig = getAudienceDefault(audience);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(emailPrefill ?? "");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -77,6 +79,32 @@ export default function LoginPage() {
     setLoading(false);
     setMessage(error ? error.message : "Magic link enviado para seu e-mail.");
   }
+
+  async function handleGoogleLogin() {
+    setLoading(true);
+    setMessage(null);
+    const supabase = createClient();
+    const redirectNext = encodeURIComponent(audienceConfig.defaultNext);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?audience=${audience}&next=${redirectNext}`,
+      },
+    });
+    setLoading(false);
+    if (error) setMessage(error.message);
+  }
+
+  useEffect(() => {
+    if (emailPrefill) setEmail(emailPrefill);
+  }, [emailPrefill]);
+
+  useEffect(() => {
+    if (oauthProvider === "google") {
+      handleGoogleLogin();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [oauthProvider]);
 
   async function handleDoctorSignup() {
     if (audience !== "doctor") {
@@ -154,6 +182,15 @@ export default function LoginPage() {
           className="mt-3 h-10 w-full rounded-md border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-60"
         >
           Enviar magic link
+        </button>
+
+        <button
+          type="button"
+          onClick={handleGoogleLogin}
+          disabled={loading}
+          className="mt-3 h-10 w-full rounded-md border border-slate-300 bg-white text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+        >
+          Continuar com Google
         </button>
 
         {audience === "doctor" ? (

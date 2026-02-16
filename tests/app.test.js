@@ -8,9 +8,7 @@ describe("App routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers["content-type"]).toContain("text/html");
-    expect(response.text).toContain(
-      "Transforme seus horarios vagos em renda extra, sem plantoes exaustivos.",
-    );
+    expect(response.text).toContain("Selecione seu ambiente de acesso");
   });
 
   it("deve retornar HTML da jornada de primeiro login", async () => {
@@ -26,7 +24,7 @@ describe("App routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers["content-type"]).toContain("text/html");
-    expect(response.text).toContain("Entrar sem senha");
+    expect(response.text).toContain("Entrar com e-mail");
   });
 
   it("deve retornar 404 para rota inexistente", async () => {

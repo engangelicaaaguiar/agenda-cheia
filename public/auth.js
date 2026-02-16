@@ -250,93 +250,25 @@ if (signupForm) {
   })();
 }
 
-const mobileLogin = document.getElementById("mobile-login");
-if (mobileLogin) {
-  const tabs = Array.from(document.querySelectorAll(".tab[data-mode]"));
-  const desktopLogin = document.getElementById("desktop-login");
-  const biometricBtn = document.getElementById("biometric-btn");
-  const biometricStatus = document.getElementById("biometric-status");
-  const pinGrid = document.getElementById("pin-grid");
-  const pinView = document.getElementById("pin-view");
-  const pinStatus = document.getElementById("pin-status");
-  const identityInput = document.getElementById("identity");
-  const magicBtn = document.getElementById("magic-btn");
-  const magicResult = document.getElementById("magic-result");
+const emailLoginBtn = document.getElementById("email-login-btn");
+const googleLoginBtn = document.getElementById("google-login-btn");
+const identityInput = document.getElementById("identity");
+const authHint = document.getElementById("auth-hint");
 
-  let currentPin = "";
-
-  const updatePinView = () => {
-    const masked = currentPin
-      .padEnd(Math.max(4, currentPin.length), "_")
-      .slice(0, Math.max(4, currentPin.length))
-      .split("")
-      .join(" ");
-    if (pinView) pinView.textContent = masked;
-  };
-
-  tabs.forEach((tab) => {
-    tab.addEventListener("click", () => {
-      tabs.forEach((item) => item.classList.remove("active"));
-      tab.classList.add("active");
-      const mode = tab.dataset.mode;
-      mobileLogin.classList.toggle("active", mode === "mobile");
-      if (desktopLogin) desktopLogin.classList.toggle("active", mode === "desktop");
-    });
+if (emailLoginBtn && identityInput) {
+  emailLoginBtn.addEventListener("click", () => {
+    const email = identityInput.value.trim();
+    if (!email) {
+      if (authHint) authHint.textContent = "Informe seu e-mail para continuar.";
+      return;
+    }
+    const encoded = encodeURIComponent(email);
+    window.location.href = `/login?audience=doctor&email=${encoded}`;
   });
+}
 
-  if (biometricBtn && biometricStatus) {
-    biometricBtn.addEventListener("click", () => {
-      biometricStatus.textContent = "Sincronizando sua agenda...";
-      setTimeout(() => {
-        biometricStatus.textContent = "Acesso liberado. Buscando novas oportunidades...";
-      }, 900);
-    });
-  }
-
-  if (pinGrid && pinStatus) {
-    pinGrid.addEventListener("click", (event) => {
-      const target = event.target;
-      if (!(target instanceof HTMLButtonElement)) return;
-
-      const action = target.getAttribute("data-pin-action");
-      const value = target.textContent?.trim();
-
-      if (action === "clear") {
-        currentPin = "";
-        pinStatus.textContent = "";
-        updatePinView();
-        return;
-      }
-
-      if (action === "send") {
-        if (currentPin.length === 4 || currentPin.length === 6) {
-          pinStatus.textContent = "Acesso rapido confirmado. Entrando no painel...";
-          pinStatus.style.color = "#166534";
-        } else {
-          pinStatus.textContent = "Use PIN de 4 ou 6 digitos para continuar.";
-          pinStatus.style.color = "#b45309";
-        }
-        return;
-      }
-
-      if (!value || !/^\d$/.test(value)) return;
-      if (currentPin.length < 6) {
-        currentPin += value;
-        updatePinView();
-      }
-    });
-  }
-
-  if (magicBtn && magicResult && identityInput) {
-    magicBtn.addEventListener("click", () => {
-      if (!identityInput.value.trim()) {
-        magicResult.textContent = "Preencha e-mail ou CPF para receber acesso rapido.";
-        magicResult.classList.add("show");
-        return;
-      }
-      magicResult.textContent =
-        "Enviamos um link seguro para voce. Toque nele para entrar instantaneamente.";
-      magicResult.classList.add("show");
-    });
-  }
+if (googleLoginBtn) {
+  googleLoginBtn.addEventListener("click", () => {
+    window.location.href = "/login?audience=doctor&oauth=google";
+  });
 }

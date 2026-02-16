@@ -1,9 +1,9 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>DutyMD | Login Medico</title>
+    <title>DutyMD | Acesso Medico</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -17,16 +17,14 @@
       <section class="brand-panel">
         <div class="logo-row">
           <strong class="logo">DutyMD</strong>
-          <span class="security">JWT 15 min + refresh 30 dias</span>
+          <span class="security">Acesso seguro</span>
         </div>
-        <h1>Acesse em segundos para aceitar oportunidades e acompanhar saldo.</h1>
-        <p>
-          Fluxo pensado para medico em rotina intensa: biometria no mobile e magic link no desktop.
-        </p>
+        <h1>Entre na sua conta medica</h1>
+        <p>Use seu e-mail ou conta Google para acessar agenda, plantoes e recebimentos.</p>
         <div class="state-badges">
-          <span>FaceID ou TouchID</span>
-          <span>PIN de 4 ou 6 digitos</span>
-          <span>Magic link por e-mail/WhatsApp</span>
+          <span>Login por e-mail</span>
+          <span>Login com Google</span>
+          <span>Redirecionamento seguro</span>
         </div>
       </section>
 
@@ -34,59 +32,19 @@
         <div class="card">
           <a class="top-back" href="./index.html">Voltar para landing</a>
 
-          <div class="tabs">
-            <button class="tab active" type="button" data-mode="mobile">Mobile rapido</button>
-            <button class="tab" type="button" data-mode="desktop">Desktop sem senha</button>
-          </div>
+          <section class="step active">
+            <h2>Escolha como entrar</h2>
+            <p>Informe seu e-mail para continuar no login DutyMD ou entre direto com Google.</p>
 
-          <section id="mobile-login" class="step active">
-            <h2>Entrar com biometria</h2>
-            <p>DutyMD quer usar FaceID/TouchID para entrar no seu painel.</p>
-            <div class="actions">
-              <button class="btn btn-primary" id="biometric-btn" type="button">Usar biometria</button>
-            </div>
-            <p class="inline-status" id="biometric-status"></p>
+            <label for="identity">E-mail</label>
+            <input id="identity" name="identity" type="email" placeholder="voce@empresa.com" />
 
-            <div class="mobile-auth">
-              <strong>Fallback rapido com PIN</strong>
-              <p class="hint">Se a biometria falhar, use seu PIN de 4 ou 6 digitos.</p>
-              <p class="pin-view" id="pin-view">_ _ _ _</p>
-              <div class="pin-grid" id="pin-grid">
-                <button type="button">1</button>
-                <button type="button">2</button>
-                <button type="button">3</button>
-                <button type="button">4</button>
-                <button type="button">5</button>
-                <button type="button">6</button>
-                <button type="button">7</button>
-                <button type="button">8</button>
-                <button type="button">9</button>
-                <button type="button">0</button>
-                <button type="button" data-pin-action="clear">Limpar</button>
-                <button type="button" data-pin-action="send">Entrar</button>
-              </div>
-              <p class="inline-status" id="pin-status"></p>
-            </div>
-          </section>
-
-          <section id="desktop-login" class="step">
-            <h2>Entrar sem senha</h2>
-            <p>Digite e-mail ou CPF. Enviamos magic link e codigo OTP para acesso instantaneo.</p>
-
-            <label for="identity">E-mail ou CPF</label>
-            <input id="identity" name="identity" placeholder="voce@clinica.com.br ou 000.000.000-00" />
-
-            <div class="actions">
-              <button class="btn btn-primary" id="magic-btn" type="button">Entrar sem senha</button>
+            <div class="actions auth-actions">
+              <button class="btn btn-primary" id="email-login-btn" type="button">Entrar com e-mail</button>
+              <button class="btn btn-secondary" id="google-login-btn" type="button">Continuar com Google</button>
             </div>
 
-            <div class="magic-result" id="magic-result">
-              Enviamos um link seguro para voce. Toque nele para entrar instantaneamente.
-            </div>
-            <p class="hint">
-              Se sua senha nao funcionar: "Hmm, essa senha nao confere. Quer que enviemos um link de
-              acesso rapido para seu e-mail?"
-            </p>
+            <p class="hint" id="auth-hint">Voce sera redirecionado para o login seguro do sistema.</p>
           </section>
         </div>
       </section>
@@ -95,4 +53,3 @@
     <script src="./auth.js" defer></script>
   </body>
 </html>
-
