@@ -316,6 +316,29 @@ const googleLoginBtn = document.getElementById("google-login-btn");
 const identityInput = document.getElementById("identity");
 const authHint = document.getElementById("auth-hint");
 
+function setAuthHintMessage(message, isError = false) {
+  if (!authHint) return;
+  authHint.textContent = message;
+  authHint.style.color = isError ? "#b91c1c" : "";
+}
+
+function showOAuthErrorIfPresent() {
+  const params = new URLSearchParams(window.location.search);
+  const oauthError = params.get("oauth_error");
+  if (!oauthError) return;
+
+  const messageByCode = {
+    supabase_not_configured: "OAuth Google indisponivel: conexao Supabase nao configurada.",
+    google_provider_not_enabled:
+      "Google login nao esta habilitado no Supabase. Ative o provider Google no painel de Auth.",
+    google_oauth_unavailable: "Nao foi possivel iniciar o login Google agora. Tente novamente.",
+    oauth_network_error: "Falha de rede ao iniciar o login Google. Tente novamente.",
+  };
+
+  const message = messageByCode[oauthError] || "Falha ao iniciar login com Google.";
+  setAuthHintMessage(message, true);
+}
+
 function parseTokenHash() {
   const hash = window.location.hash || "";
   if (!hash.includes("access_token")) return null;
@@ -352,21 +375,22 @@ async function handleGoogleReturnIfNeeded() {
 
   const tokenInfo = parseTokenHash();
   if (!tokenInfo?.accessToken) {
-    if (authHint) authHint.textContent = "Falha no retorno do Google. Tente novamente.";
+    setAuthHintMessage("Falha no retorno do Google. Tente novamente.", true);
     return;
   }
 
-  if (authHint) authHint.textContent = "Validando sua conta Google...";
+  setAuthHintMessage("Validando sua conta Google...");
 
   try {
     const doctorId = await bootstrapGoogleDoctor(tokenInfo.accessToken);
     setActiveDoctorId(doctorId);
     window.location.href = `/cadastro.html?doctorId=${encodeURIComponent(doctorId)}`;
   } catch (error) {
-    if (authHint) authHint.textContent = error.message || "Falha ao concluir login com Google.";
+    setAuthHintMessage(error.message || "Falha ao concluir login com Google.", true);
   }
 }
 
+showOAuthErrorIfPresent();
 handleGoogleReturnIfNeeded();
 
 if (emailLoginBtn && identityInput) {
@@ -383,6 +407,7 @@ if (emailLoginBtn && identityInput) {
 
 if (googleLoginBtn) {
   googleLoginBtn.addEventListener("click", () => {
+    setAuthHintMessage("Redirecionando para autenticacao Google...");
     window.location.href = "/api/auth/google-start";
   });
 }

@@ -134,9 +134,9 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok", supabaseEnabled });
 });
 
-app.get("/api/auth/google-start", (req, res) => {
+app.get("/api/auth/google-start", async (req, res) => {
   if (!supabaseEnabled || !process.env.SUPABASE_URL) {
-    return res.status(400).json({ error: "Supabase nao configurado para OAuth." });
+    return res.redirect("/login.html?oauth_error=supabase_not_configured");
   }
 
   const origin = getRequestOrigin(req);
@@ -146,7 +146,26 @@ app.get("/api/auth/google-start", (req, res) => {
   oauthUrl.searchParams.set("flow_type", "implicit");
   oauthUrl.searchParams.set("redirect_to", redirectTo);
 
-  return res.redirect(oauthUrl.toString());
+  try {
+    const probe = await fetch(oauthUrl.toString(), { redirect: "manual" });
+    const locationHeader = probe.headers.get("location");
+
+    if (probe.status >= 300 && probe.status < 400 && locationHeader) {
+      const nextUrl = locationHeader.startsWith("http")
+        ? locationHeader
+        : new URL(locationHeader, process.env.SUPABASE_URL).toString();
+      return res.redirect(nextUrl);
+    }
+
+    const payload = await probe.text();
+    if (payload.includes("provider is not enabled")) {
+      return res.redirect("/login.html?oauth_error=google_provider_not_enabled");
+    }
+
+    return res.redirect("/login.html?oauth_error=google_oauth_unavailable");
+  } catch {
+    return res.redirect("/login.html?oauth_error=oauth_network_error");
+  }
 });
 
 app.post("/api/auth/bootstrap-doctor", async (req, res, next) => {
