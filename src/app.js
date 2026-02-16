@@ -1,13 +1,10 @@
 import express from "express";
 import cors from "cors";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { supabaseAdmin, supabaseEnabled } from "./lib/supabaseAdmin.js";
 
 const app = express();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const publicDir = path.join(__dirname, "..", "public");
+const publicDir = path.join(process.cwd(), "public");
 
 const memoryDb = {
   doctors: new Map(),
@@ -26,7 +23,9 @@ const specialtiesCatalog = [
 
 app.use(cors());
 app.use(express.json({ limit: "2mb" }));
-app.use(express.static(publicDir));
+if (!process.env.NETLIFY) {
+  app.use(express.static(publicDir));
+}
 
 function getDoctorId(req) {
   return req.header("x-user-id") || req.body?.doctorId || req.query?.doctorId || "demo-doctor";
