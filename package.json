@@ -1,7 +1,7 @@
-{
-  "name": "agenda-cheia",
+﻿{
+  "name": "dutymd",
   "version": "1.0.0",
-  "description": "“Ser a fonte única e confiável de disponibilidade de médicos verificados, sincronizando em tempo real agendas pessoais, plataformas de telemedicina e PEPs das clínicas, eliminando conflitos de horário e maximizando o aproveitamento da agenda médica.”",
+  "description": "â€œSer a fonte Ãºnica e confiÃ¡vel de disponibilidade de mÃ©dicos verificados, sincronizando em tempo real agendas pessoais, plataformas de telemedicina e PEPs das clÃ­nicas, eliminando conflitos de horÃ¡rio e maximizando o aproveitamento da agenda mÃ©dica.â€",
   "main": "src/index.js",
   "directories": {
     "doc": "docs",
@@ -29,3 +29,4 @@
     "vitest": "^4.0.18"
   }
 }
+

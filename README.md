@@ -1,5 +1,6 @@
-# agenda-cheia
-“Ser a fonte única e confiável de disponibilidade de médicos verificados, sincronizando em tempo real agendas pessoais, plataformas de telemedicina e PEPs das clínicas, eliminando conflitos de horário e maximizando o aproveitamento da agenda médica.”
+﻿# dutymd
+â€œSer a fonte Ãºnica e confiÃ¡vel de disponibilidade de mÃ©dicos verificados, sincronizando em tempo real agendas pessoais, plataformas de telemedicina e PEPs das clÃ­nicas, eliminando conflitos de horÃ¡rio e maximizando o aproveitamento da agenda mÃ©dica.â€
+
 
 
 
