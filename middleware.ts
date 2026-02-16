@@ -4,9 +4,10 @@ import { updateSession } from "./lib/supabase/middleware";
 
 export async function middleware(request: NextRequest) {
   const { response, user } = await updateSession(request);
-  const isDashboardRoute = request.nextUrl.pathname.startsWith("/dashboard");
+  const protectedPrefixes = ["/dashboard", "/agenda", "/plantoes", "/recebimentos", "/onboarding"];
+  const isProtectedRoute = protectedPrefixes.some((prefix) => request.nextUrl.pathname.startsWith(prefix));
 
-  if (isDashboardRoute && !user) {
+  if (isProtectedRoute && !user) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
     redirectUrl.searchParams.set("next", request.nextUrl.pathname);

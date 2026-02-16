@@ -1,9 +1,23 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "../../lib/supabase/client";
+import {
+  LOGIN_AUDIENCE_CONFIG,
+  getAudienceDefault,
+  isLoginAudience,
+  resolveAudienceRedirect,
+  type LoginAudience,
+} from "../../lib/auth/login-audience";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const audienceParam = searchParams.get("audience");
+  const audience: LoginAudience = isLoginAudience(audienceParam) ? audienceParam : "doctor";
+
+  const audienceConfig = getAudienceDefault(audience);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState<string | null>(null);
@@ -15,29 +29,97 @@ export default function LoginPage() {
     setMessage(null);
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      setLoading(false);
+      setMessage(error.message);
+      return;
+    }
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setLoading(false);
+      setMessage("Nao foi possivel recuperar a sessao.");
+      return;
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const roleValue = typeof profile?.role === "string" ? profile.role : null;
+    const target = resolveAudienceRedirect(audience, roleValue);
     setLoading(false);
-    setMessage(error ? error.message : "Login realizado com sucesso.");
+    if (!target) {
+      await supabase.auth.signOut();
+      setMessage("Este usuario nao tem permissao para este tipo de login.");
+      return;
+    }
+
+    router.push(target);
   }
 
   async function handleMagicLink() {
     setLoading(true);
     setMessage(null);
     const supabase = createClient();
+    const redirectNext = encodeURIComponent(audienceConfig.defaultNext);
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?audience=${audience}&next=${redirectNext}`,
       },
     });
     setLoading(false);
     setMessage(error ? error.message : "Magic link enviado para seu e-mail.");
   }
 
+  async function handleDoctorSignup() {
+    if (audience !== "doctor") {
+      setMessage("Cadastro direto esta disponivel apenas para perfil Medico.");
+      return;
+    }
+
+    setLoading(true);
+    setMessage(null);
+    const supabase = createClient();
+    const redirectNext = encodeURIComponent("/onboarding");
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback?audience=doctor&next=${redirectNext}`,
+        data: { role: "DOCTOR" },
+      },
+    });
+    setLoading(false);
+    setMessage(error ? error.message : "Conta criada. Verifique seu e-mail para confirmar e concluir o cadastro.");
+  }
+
   return (
     <main className="min-h-screen grid place-items-center bg-slate-50 p-6">
       <section className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <h1 className="text-xl font-semibold text-slate-900">Login DutyMD</h1>
-        <p className="mt-1 text-sm text-slate-600">Acesse com senha ou receba magic link.</p>
+        <p className="mt-1 text-sm text-slate-600">Escolha o tipo de acesso e entre com senha ou magic link.</p>
+
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          {Object.entries(LOGIN_AUDIENCE_CONFIG).map(([key, config]) => (
+            <a
+              key={key}
+              href={`/login?audience=${key}`}
+              className={`rounded-md border px-2 py-2 text-center text-xs font-medium ${
+                audience === key ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-slate-300 text-slate-700"
+              }`}
+            >
+              {config.label}
+            </a>
+          ))}
+        </div>
+        <p className="mt-2 text-xs text-slate-500">{audienceConfig.description}</p>
 
         <form className="mt-5 space-y-3" onSubmit={handlePasswordLogin}>
           <input
@@ -73,6 +155,17 @@ export default function LoginPage() {
         >
           Enviar magic link
         </button>
+
+        {audience === "doctor" ? (
+          <button
+            type="button"
+            onClick={handleDoctorSignup}
+            disabled={loading || !email || !password}
+            className="mt-3 h-10 w-full rounded-md border border-emerald-300 text-sm font-medium text-emerald-700 hover:bg-emerald-50 disabled:opacity-60"
+          >
+            Criar conta medica
+          </button>
+        ) : null}
 
         {message ? <p className="mt-3 text-sm text-slate-700">{message}</p> : null}
       </section>

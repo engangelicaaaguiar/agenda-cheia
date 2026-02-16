@@ -22,6 +22,8 @@ const OnboardingFormSchema = z.object({
     .min(4, "CRM invalido.")
     .regex(/^\d+$/, "CRM deve conter apenas numeros."),
   crmState: z.string().length(2, "UF deve ter 2 caracteres."),
+  rqe: z.string().max(30, "RQE muito longo.").optional(),
+  ecpfLinked: z.boolean().default(false),
   specialty: z.string().min(2, "Selecione uma especialidade."),
   documentNames: z.array(z.string().min(1)).min(1, "Envie ao menos um documento."),
 });
@@ -56,6 +58,8 @@ export default function OnboardingPage() {
       fullName: "",
       crm: "",
       crmState: "",
+      rqe: "",
+      ecpfLinked: false,
       specialty: "",
       documentNames: [],
     },
@@ -99,6 +103,8 @@ export default function OnboardingPage() {
         fullName: values.fullName,
         crm: values.crm,
         crmState: values.crmState,
+        rqe: values.rqe,
+        ecpfLinked: values.ecpfLinked,
         role: "DOCTOR",
         specialties: [values.specialty],
         documentNames: values.documentNames,
@@ -160,6 +166,17 @@ export default function OnboardingPage() {
                 />
                 {errors.specialty ? <p className="text-xs text-red-600">{errors.specialty.message}</p> : null}
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="rqe">RQE (opcional)</Label>
+                <Input id="rqe" {...register("rqe")} placeholder="12345" />
+                {errors.rqe ? <p className="text-xs text-red-600">{errors.rqe.message}</p> : null}
+              </div>
+
+              <label className="flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" {...register("ecpfLinked")} />
+                Ja vinculei meu e-CPF para assinatura digital.
+              </label>
             </section>
 
             <section className="space-y-3">

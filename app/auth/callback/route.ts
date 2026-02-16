@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import { createClient } from "../../../lib/supabase/server";
+import { isLoginAudience, resolveAudienceRedirect, type LoginAudience } from "../../../lib/auth/login-audience";
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
   const next = requestUrl.searchParams.get("next");
+  const audienceParam = requestUrl.searchParams.get("audience");
+  const audience: LoginAudience = isLoginAudience(audienceParam) ? audienceParam : "doctor";
   const origin = requestUrl.origin;
   const fallbackRedirect = `${origin}/dashboard`;
 
@@ -38,15 +41,14 @@ export async function GET(request: Request) {
   }
 
   const roleValue = typeof profile?.role === "string" ? profile.role : null;
-  const crmValue =
-    typeof profile?.crm === "string"
-      ? profile.crm
-      : typeof profile?.crm_number === "string"
-        ? profile.crm_number
-        : null;
+  const audienceTarget = resolveAudienceRedirect(audience, roleValue);
+  if (!audienceTarget) {
+    await supabase.auth.signOut();
+    return NextResponse.redirect(`${origin}/login?error=audience_not_allowed&audience=${audience}`);
+  }
 
-  const isIncomplete = !roleValue || !crmValue;
-  const target = isIncomplete ? "/onboarding" : next || "/dashboard";
+  const safeNext = next?.startsWith("/") ? next : null;
+  const target = safeNext || audienceTarget;
 
   return NextResponse.redirect(`${origin}${target || fallbackRedirect}`);
 }

@@ -19,6 +19,8 @@ export const OnboardingProfileInputSchema = z.object({
   fullName: z.string().min(3).max(120),
   crm: z.string().min(4).max(20),
   crmState: z.string().length(2),
+  rqe: z.string().max(30).optional(),
+  ecpfLinked: z.boolean().optional(),
   role: z.enum(["DOCTOR", "ADMIN", "STAFF"]).default("DOCTOR"),
   specialties: z.array(z.string().min(2).max(80)).min(1),
   documentNames: z.array(z.string().min(1)).min(1),

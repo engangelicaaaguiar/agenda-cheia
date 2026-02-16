@@ -5,6 +5,7 @@ import { parse, isBefore } from "date-fns";
 import { WeeklyGrid } from "../../components/scheduler/weekly-grid";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
+import { DoctorSidebar } from "../../components/layout/doctor-sidebar";
 import type { AvailabilitySlot } from "../../types/availability";
 import { saveAvailability } from "./actions";
 
@@ -81,22 +82,7 @@ export function AgendaClient({ initialSlots }: AgendaClientProps) {
   return (
     <>
       <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[250px_1fr]">
-        <aside className="hidden border-r border-slate-200 bg-white p-5 lg:block">
-          <div className="space-y-6">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">DutyMD</p>
-              <h2 className="mt-1 text-lg font-semibold text-slate-900">Painel Medico</h2>
-            </div>
-            <nav className="space-y-1">
-              <a className="block rounded-md bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700" href="/agenda">
-                Agenda de disponibilidade
-              </a>
-              <a className="block rounded-md px-3 py-2 text-sm text-slate-600 hover:bg-slate-100" href="/dashboard">
-                Dashboard
-              </a>
-            </nav>
-          </div>
-        </aside>
+        <DoctorSidebar currentPath="/agenda" />
 
         <main className="bg-slate-50 p-6">
           <Card className="mx-auto max-w-[1280px]">

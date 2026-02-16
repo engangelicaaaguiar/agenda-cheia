@@ -47,6 +47,22 @@ async function updateProfileWithFallback(userId: string, payload: OnboardingProf
   return null;
 }
 
+async function upsertDoctorCompliance(userId: string, payload: OnboardingProfileInput): Promise<void> {
+  const supabase = createClient();
+  await supabase.from("doctor_compliance").upsert(
+    {
+      doctor_id: userId,
+      crm_number: payload.crm,
+      crm_state: payload.crmState,
+      rqe_number: payload.rqe ?? null,
+      ecpf_linked: payload.ecpfLinked ?? false,
+      vault_ready: payload.documentNames.length > 0,
+      cfm_status: "PENDING",
+    },
+    { onConflict: "doctor_id" },
+  );
+}
+
 export async function saveUserProfileOnboarding(input: OnboardingProfileInput): Promise<SaveOnboardingResult> {
   const parsed = OnboardingProfileInputSchema.safeParse(input);
   if (!parsed.success) {
@@ -73,6 +89,8 @@ export async function saveUserProfileOnboarding(input: OnboardingProfileInput): 
   if (profileError) {
     return { ok: false, error: profileError };
   }
+
+  await upsertDoctorCompliance(user.id, payload);
 
   // Optional metadata persistence for onboarding proof.
   // This block is best-effort and does not fail onboarding if table is absent.
