@@ -1,11 +1,62 @@
-const DEMO_DOCTOR_ID = "demo-doctor";
+const DOCTOR_ID_STORAGE_KEY = "dutymd_doctor_id";
+
+function generateDoctorId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return `doctor-${crypto.randomUUID()}`;
+  }
+  return `doctor-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function getDoctorIdFromUrl() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const candidate = params.get("doctorId") || params.get("doctor_id");
+    if (candidate && candidate.trim().length >= 8) {
+      return candidate.trim();
+    }
+  } catch {
+    // Ignora parsing de URL em ambientes sem window.
+  }
+  return null;
+}
+
+function getOrCreateDoctorId() {
+  const fromUrl = getDoctorIdFromUrl();
+  if (fromUrl) {
+    try {
+      localStorage.setItem(DOCTOR_ID_STORAGE_KEY, fromUrl);
+    } catch {
+      // Ignora erro de storage e segue com valor da URL.
+    }
+    return fromUrl;
+  }
+
+  try {
+    const stored = localStorage.getItem(DOCTOR_ID_STORAGE_KEY);
+    if (stored && stored.trim().length >= 8) {
+      return stored;
+    }
+  } catch {
+    // Ignora falha de leitura de storage.
+  }
+
+  const created = generateDoctorId();
+  try {
+    localStorage.setItem(DOCTOR_ID_STORAGE_KEY, created);
+  } catch {
+    // Ignora falha de escrita de storage.
+  }
+  return created;
+}
+
+const ACTIVE_DOCTOR_ID = getOrCreateDoctorId();
 
 const api = async (url, options = {}) => {
   const response = await fetch(url, {
     ...options,
     headers: {
       "Content-Type": "application/json",
-      "x-user-id": DEMO_DOCTOR_ID,
+      "x-user-id": ACTIVE_DOCTOR_ID,
       ...(options.headers || {}),
     },
   });
