@@ -99,8 +99,7 @@ if (signupForm) {
   const selectedSpecialties = [];
   const selectedSlots = [];
   let specialtiesCatalog = [];
-  let selectedCrmFile = null;
-  let hasValidatedDocument = false;
+  let selectedDocuments = [];
 
   const availabilityTemplates = [
     { day_of_week: 1, period: "Manha", start_time: "08:00", end_time: "12:00" },
@@ -182,40 +181,17 @@ if (signupForm) {
     });
   };
 
-  const fileToDataUrl = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
-      reader.onerror = () => reject(new Error("Nao foi possivel ler o arquivo enviado."));
-      reader.readAsDataURL(file);
-    });
-
-  const OCR_IMAGE_FALLBACK = "data:image/mock;base64,AAAABBBB";
-
-  const buildOcrPayload = async (file) => {
-    const isImage = (file.type || "").startsWith("image/");
-    const fileSizeMb = file.size / (1024 * 1024);
-    let imageBase64 = OCR_IMAGE_FALLBACK;
-
-    // Evita payload muito grande no backend serverless.
-    if (isImage && fileSizeMb <= 1.2) {
-      const converted = await fileToDataUrl(file);
-      imageBase64 = converted && converted.length >= 12 ? converted : OCR_IMAGE_FALLBACK;
-    }
-
-    return {
-      imageBase64,
-      phone: phoneInput?.value?.trim() || "",
-      fileName: file.name,
-      mimeType: file.type || "application/octet-stream",
-    };
-  };
-
   const saveStep = async (step) => {
     const payload = { step, data: {} };
 
     if (step === 1) {
       payload.data.phone = phoneInput?.value?.trim() || "";
+      payload.data.document_review_status = "pending";
+      payload.data.documents = selectedDocuments.map((file) => ({
+        file_name: file.name,
+        mime_type: file.type || "application/octet-stream",
+        size_bytes: file.size || 0,
+      }));
     }
 
     if (step === 2) {
@@ -266,122 +242,58 @@ if (signupForm) {
 
   if (crmFileInput && crmFileName && runOcrBtn) {
     crmFileInput.addEventListener("change", () => {
-      const file = crmFileInput.files && crmFileInput.files[0] ? crmFileInput.files[0] : null;
-      selectedCrmFile = file;
-      hasValidatedDocument = false;
+      const files = crmFileInput.files ? Array.from(crmFileInput.files) : [];
+      selectedDocuments = files;
       if (ocrResult) ocrResult.classList.remove("show");
 
-      if (!file) {
+      if (!files.length) {
         crmFileName.textContent = "Nenhum arquivo selecionado.";
         runOcrBtn.disabled = true;
         return;
       }
 
-      const fileSizeMb = file.size / (1024 * 1024);
-      if (fileSizeMb > 8) {
-        crmFileName.textContent = "Arquivo maior que 8MB. Envie um arquivo menor.";
+      const hasInvalidFile = files.some((file) => file.size / (1024 * 1024) > 8);
+      if (hasInvalidFile) {
+        crmFileName.textContent = "Um dos arquivos excede 8MB. Envie arquivos menores.";
         crmFileName.style.color = "#b91c1c";
-        selectedCrmFile = null;
+        selectedDocuments = [];
         crmFileInput.value = "";
         runOcrBtn.disabled = true;
         return;
       }
 
-      crmFileName.textContent = `Arquivo selecionado: ${file.name}`;
+      crmFileName.textContent = `Arquivos selecionados: ${files.map((file) => file.name).join(", ")}`;
       crmFileName.style.color = "";
       runOcrBtn.disabled = false;
-      runOcrBtn.textContent = "Validar documento e liberar acesso";
+      runOcrBtn.textContent = "Enviar documentos e continuar";
     });
   }
 
   if (runOcrBtn && scanZone && ocrResult) {
     runOcrBtn.addEventListener("click", async () => {
-      if (hasValidatedDocument) {
-        try {
-          await saveStep(1);
-          showStep(2);
-        } catch (error) {
-          alert(error.message || "Nao foi possivel avancar para o proximo passo.");
-        }
-        return;
-      }
-
-      if (!selectedCrmFile) {
-        alert("Selecione um documento ou imagem para validar.");
+      if (!selectedDocuments.length) {
+        alert("Selecione ao menos um documento ou imagem para enviar.");
         return;
       }
 
       runOcrBtn.disabled = true;
-      runOcrBtn.textContent = "Validando...";
+      runOcrBtn.textContent = "Enviando...";
       scanZone.classList.add("scanning");
       try {
-        const payload = await buildOcrPayload(selectedCrmFile);
-        let result = await api("/api/onboarding/validate-crm", {
-          method: "POST",
-          body: JSON.stringify(payload),
-        });
-
-        // Fallback defensivo para backend antigo que exige apenas imageBase64.
-        if (!result?.extracted?.crm_number) {
-          result = await api("/api/onboarding/validate-crm", {
-            method: "POST",
-            body: JSON.stringify({
-              ...payload,
-              imageBase64: OCR_IMAGE_FALLBACK,
-            }),
-          });
-        }
-
-        const extracted = result.extracted || {};
+        await saveStep(1);
         if (ocrFields) {
-          ocrFields.innerHTML = `
-            <li>${extracted.full_name || "-"}</li>
-            <li>CRM: ${extracted.crm_number || "-"}-${extracted.crm_state || "-"}</li>
-            <li>Especialidade: ${extracted.specialty_hint || "-"}</li>
-            ${extracted.source_file ? `<li>Arquivo: ${extracted.source_file}</li>` : ""}
-          `;
+          ocrFields.innerHTML = selectedDocuments
+            .map((file) => `<li>${file.name} (${Math.max(1, Math.round(file.size / 1024))} KB)</li>`)
+            .join("");
         }
         ocrResult.classList.add("show");
-        hasValidatedDocument = true;
+        showStep(2);
       } catch (error) {
-        const message = error?.message || "Falha ao validar documento.";
-        if (message.includes("Imagem do CRM obrigatoria.")) {
-          try {
-            const retryResult = await api("/api/onboarding/validate-crm", {
-              method: "POST",
-              body: JSON.stringify({
-                imageBase64: OCR_IMAGE_FALLBACK,
-                phone: phoneInput?.value?.trim() || "",
-                fileName: selectedCrmFile.name,
-                mimeType: selectedCrmFile.type || "application/octet-stream",
-              }),
-            });
-            const extracted = retryResult.extracted || {};
-            if (ocrFields) {
-              ocrFields.innerHTML = `
-                <li>${extracted.full_name || "-"}</li>
-                <li>CRM: ${extracted.crm_number || "-"}-${extracted.crm_state || "-"}</li>
-                <li>Especialidade: ${extracted.specialty_hint || "-"}</li>
-                ${extracted.source_file ? `<li>Arquivo: ${extracted.source_file}</li>` : ""}
-              `;
-            }
-            ocrResult.classList.add("show");
-            hasValidatedDocument = true;
-          } catch (retryError) {
-            alert(retryError?.message || "Falha ao validar documento.");
-          }
-        } else {
-          alert(message);
-        }
+        alert(error?.message || "Falha ao enviar documentos.");
       } finally {
         scanZone.classList.remove("scanning");
-        if (hasValidatedDocument) {
-          runOcrBtn.textContent = "OCR concluido - continuar";
-          runOcrBtn.disabled = false;
-        } else {
-          runOcrBtn.textContent = "Validar documento e liberar acesso";
-          runOcrBtn.disabled = false;
-        }
+        runOcrBtn.textContent = "Enviar documentos e continuar";
+        runOcrBtn.disabled = false;
       }
     });
   }
