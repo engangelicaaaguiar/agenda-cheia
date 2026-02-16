@@ -182,9 +182,13 @@ if (signupForm) {
   };
 
   const saveStep = async (step) => {
-    const payload = { step, data: {} };
+    const stepValue = Number.parseInt(String(step), 10);
+    if (!Number.isInteger(stepValue)) {
+      throw new Error("Passo de cadastro invalido.");
+    }
+    const payload = { step: stepValue, data: {} };
 
-    if (step === 1) {
+    if (stepValue === 1) {
       payload.data.phone = phoneInput?.value?.trim() || "";
       payload.data.document_review_status = "pending";
       payload.data.documents = selectedDocuments.map((file) => ({
@@ -194,19 +198,22 @@ if (signupForm) {
       }));
     }
 
-    if (step === 2) {
+    if (stepValue === 2) {
       payload.data.specialties = selectedSpecialties.map((item) => ({
         specialty_id: item.id,
         is_primary: item.is_primary,
       }));
     }
 
-    if (step === 3) {
+    if (stepValue === 3) {
       payload.data.availabilities = selectedSlots.map(({ _idx, ...rest }) => rest);
     }
 
-    await api("/api/onboarding/save-step", {
+    await api(`/api/onboarding/save-step?step=${encodeURIComponent(String(stepValue))}`, {
       method: "POST",
+      headers: {
+        "x-onboarding-step": String(stepValue),
+      },
       body: JSON.stringify(payload),
     });
   };

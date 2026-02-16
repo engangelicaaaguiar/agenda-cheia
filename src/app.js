@@ -336,7 +336,19 @@ app.post("/api/onboarding/save-step", async (req, res, next) => {
   try {
     const doctorId = getDoctorId(req);
     const doctor = await ensureDoctor(doctorId);
-    const { step, data } = req.body || {};
+    let parsedBody = req.body;
+    if (typeof parsedBody === "string") {
+      try {
+        parsedBody = JSON.parse(parsedBody);
+      } catch {
+        parsedBody = {};
+      }
+    }
+    if (!parsedBody || typeof parsedBody !== "object") parsedBody = {};
+
+    const rawStep = parsedBody.step ?? req.query?.step ?? req.header("x-onboarding-step");
+    const step = Number.parseInt(String(rawStep), 10);
+    const data = parsedBody.data && typeof parsedBody.data === "object" ? parsedBody.data : {};
 
     if (!Number.isInteger(step) || step < 1 || step > 4) {
       return res.status(400).json({ error: "Step invalido." });
