@@ -86,11 +86,11 @@ export default function LoginPage() {
     setMessage(error ? error.message : "Magic link enviado para seu e-mail.");
   }
 
-  async function handleGoogleLogin() {
+  async function handleGoogleLogin(nextPath?: string) {
     setLoading(true);
     setMessage(null);
     const supabase = createClient();
-    const redirectNext = encodeURIComponent(audienceConfig.defaultNext);
+    const redirectNext = encodeURIComponent(nextPath ?? audienceConfig.defaultNext);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -205,22 +205,32 @@ export default function LoginPage() {
 
         <button
           type="button"
-          onClick={handleGoogleLogin}
+          onClick={() => handleGoogleLogin()}
           disabled={loading}
           className="mt-3 h-10 w-full rounded-md border border-slate-300 bg-white text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
         >
-          Continuar com Google
+          Entrar com Google
         </button>
 
         {audience === "doctor" ? (
-          <button
-            type="button"
-            onClick={handleDoctorSignup}
-            disabled={loading || !email || !password}
-            className="mt-3 h-10 w-full rounded-md border border-emerald-300 text-sm font-medium text-emerald-700 hover:bg-emerald-50 disabled:opacity-60"
-          >
-            Criar conta medica
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={handleDoctorSignup}
+              disabled={loading || !email || !password}
+              className="mt-3 h-10 w-full rounded-md border border-emerald-300 text-sm font-medium text-emerald-700 hover:bg-emerald-50 disabled:opacity-60"
+            >
+              Criar conta medica
+            </button>
+            <button
+              type="button"
+              onClick={() => handleGoogleLogin("/onboarding")}
+              disabled={loading}
+              className="mt-3 h-10 w-full rounded-md border border-blue-200 bg-blue-50 text-sm font-medium text-blue-700 hover:bg-blue-100 disabled:opacity-60"
+            >
+              Criar conta com Google
+            </button>
+          </>
         ) : null}
 
         {message ? <p className="mt-3 text-sm text-slate-700">{message}</p> : null}

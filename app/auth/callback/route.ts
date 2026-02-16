@@ -50,6 +50,18 @@ export async function GET(request: Request) {
   }
 
   const roleValue = typeof profile?.role === "string" ? profile.role : null;
+  const crmValue =
+    typeof profile?.crm === "string"
+      ? profile.crm
+      : typeof profile?.crm_number === "string"
+        ? profile.crm_number
+        : null;
+
+  const doctorNeedsOnboarding = audience === "doctor" && (!roleValue || !crmValue);
+  if (doctorNeedsOnboarding) {
+    return NextResponse.redirect(`${origin}/onboarding`);
+  }
+
   const audienceTarget = resolveAudienceRedirect(audience, roleValue);
   if (!audienceTarget) {
     await supabase.auth.signOut();
