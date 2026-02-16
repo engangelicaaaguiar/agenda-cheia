@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DutyMD | Landing para Clinicas e Hospitais</title>
+    <meta
+      name="description"
+      content="DutyMD para clinicas e hospitais: escala medica, cobertura rapida e operacao com compliance."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="hero section clinic-hero">
+      <div class="container top-nav">
+        <a class="brand" href="./index.html">DutyMD</a>
+        <div class="top-nav-actions">
+          <a class="btn btn-ghost" href="./medicos.html">Medicos</a>
+          <a class="btn btn-ghost" href="/login?audience=platform_admin">Admin</a>
+          <a class="btn btn-primary" href="/login?audience=clinic">Login Clinica</a>
+        </div>
+      </div>
+
+      <div class="container hero-grid">
+        <div class="hero-copy reveal">
+          <p class="eyebrow">DutyMD for Providers</p>
+          <h1>Escala medica com menos vacios e mais previsibilidade operacional.</h1>
+          <p class="subhead">
+            Conecte sua demanda a medicos validados, com trilha de compliance, historico auditavel e governanca de acesso.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="/login?audience=clinic">Login Clinica</a>
+            <a class="btn btn-ghost" href="./index.html">Voltar ao portal geral</a>
+          </div>
+          <p class="micro-proof">Fluxo de login de clinicas ainda em desenvolvimento.</p>
+        </div>
+
+        <div class="card reveal clinic-highlight">
+          <h3>O que sua operacao ganha</h3>
+          <ul>
+            <li>Cobertura de janelas criticas em menos tempo</li>
+            <li>Pool de medicos com credenciais verificadas</li>
+            <li>Controle de pagamentos e status de plantao</li>
+            <li>Base preparada para multi-tenant e RLS</li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <section class="trust-bar section">
+      <div class="container">
+        <p class="trust-title">DutyMD para operacao hospitalar segura</p>
+        <div class="logo-row">
+          <span>LGPD</span>
+          <span>CFM</span>
+          <span>Auditoria</span>
+          <span>RLS</span>
+          <span>Dashboard Operacional</span>
+        </div>
+      </div>
+    </section>
+
+    <footer class="section footer">
+      <div class="container">
+        <h2>Clinica ou hospital? Entre no canal DutyMD B2B.</h2>
+        <a class="btn btn-primary btn-large" href="/login?audience=clinic">Login Clinica</a>
+        <nav class="legal-links" aria-label="Links principais">
+          <a href="./index.html">Portal Geral</a>
+          <a href="./medicos.html">Landing Medicos</a>
+          <a href="/login?audience=platform_admin">Acesso Admin</a>
+        </nav>
+      </div>
+    </footer>
+
+    <script src="./script.js" defer></script>
+  </body>
+</html>

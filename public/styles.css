@@ -368,3 +368,75 @@ summary::-webkit-details-marker {
     justify-content: center;
   }
 }
+
+.portal-hero {
+  background: radial-gradient(circle at top left, #e8f4ff 0%, #ffffff 45%);
+}
+
+.top-nav-portal {
+  margin-bottom: 40px;
+}
+
+.top-nav-actions-portal {
+  align-items: center;
+}
+
+.portal-link {
+  text-decoration: none;
+  color: #1e293b;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.portal-link-admin {
+  opacity: 0.68;
+  font-size: 0.82rem;
+}
+
+.portal-copy {
+  max-width: 760px;
+  margin-bottom: 28px;
+}
+
+.portal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.portal-kicker {
+  color: var(--trust);
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.portal-card h2 {
+  margin: 8px 0 0;
+  font-size: 1.55rem;
+}
+
+.portal-card p {
+  margin-top: 10px;
+}
+
+.clinic-hero {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.clinic-highlight {
+  align-self: center;
+  border-left: 5px solid #2962ff;
+}
+
+@media (max-width: 980px) {
+  .portal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .top-nav-actions-portal {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}
