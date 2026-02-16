@@ -295,9 +295,11 @@ app.post("/api/onboarding/validate-crm", async (req, res, next) => {
   try {
     const doctorId = getDoctorId(req);
     await ensureDoctor(doctorId);
-    const { imageBase64, phone } = req.body || {};
+    const { imageBase64, phone, fileName } = req.body || {};
+    const hasImageBase64 = typeof imageBase64 === "string" && imageBase64.length >= 8;
+    const hasFileName = typeof fileName === "string" && fileName.trim().length >= 3;
 
-    if (!imageBase64 || typeof imageBase64 !== "string" || imageBase64.length < 8) {
+    if (!hasImageBase64 && !hasFileName) {
       return res.status(400).json({ error: "Imagem do CRM obrigatoria." });
     }
 
@@ -308,6 +310,7 @@ app.post("/api/onboarding/validate-crm", async (req, res, next) => {
       crm_state: "SP",
       specialty_hint: "Cardiologia",
       crm_status: "valid",
+      source_file: hasFileName ? fileName : null,
     };
 
     const doctor = await saveDoctorPatch(doctorId, {

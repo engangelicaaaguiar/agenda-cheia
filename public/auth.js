@@ -275,6 +275,16 @@ if (signupForm) {
 
   if (runOcrBtn && scanZone && ocrResult) {
     runOcrBtn.addEventListener("click", async () => {
+      if (hasValidatedDocument) {
+        try {
+          await saveStep(1);
+          showStep(2);
+        } catch (error) {
+          alert(error.message || "Nao foi possivel avancar para o proximo passo.");
+        }
+        return;
+      }
+
       if (!selectedCrmFile) {
         alert("Selecione um documento ou imagem para validar.");
         return;
@@ -300,6 +310,7 @@ if (signupForm) {
             <li>${extracted.full_name || "-"}</li>
             <li>CRM: ${extracted.crm_number || "-"}-${extracted.crm_state || "-"}</li>
             <li>Especialidade: ${extracted.specialty_hint || "-"}</li>
+            ${extracted.source_file ? `<li>Arquivo: ${extracted.source_file}</li>` : ""}
           `;
         }
         ocrResult.classList.add("show");
@@ -309,8 +320,8 @@ if (signupForm) {
       } finally {
         scanZone.classList.remove("scanning");
         if (hasValidatedDocument) {
-          runOcrBtn.textContent = "Documento validado";
-          runOcrBtn.disabled = true;
+          runOcrBtn.textContent = "OCR concluido - continuar";
+          runOcrBtn.disabled = false;
         } else {
           runOcrBtn.textContent = "Validar documento e liberar acesso";
           runOcrBtn.disabled = false;
