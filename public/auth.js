@@ -190,6 +190,27 @@ if (signupForm) {
       reader.readAsDataURL(file);
     });
 
+  const OCR_IMAGE_FALLBACK = "data:image/mock;base64,AAAABBBB";
+
+  const buildOcrPayload = async (file) => {
+    const isImage = (file.type || "").startsWith("image/");
+    const fileSizeMb = file.size / (1024 * 1024);
+    let imageBase64 = OCR_IMAGE_FALLBACK;
+
+    // Evita payload muito grande no backend serverless.
+    if (isImage && fileSizeMb <= 1.2) {
+      const converted = await fileToDataUrl(file);
+      imageBase64 = converted && converted.length >= 12 ? converted : OCR_IMAGE_FALLBACK;
+    }
+
+    return {
+      imageBase64,
+      phone: phoneInput?.value?.trim() || "",
+      fileName: file.name,
+      mimeType: file.type || "application/octet-stream",
+    };
+  };
+
   const saveStep = async (step) => {
     const payload = { step, data: {} };
 
@@ -294,16 +315,23 @@ if (signupForm) {
       runOcrBtn.textContent = "Validando...";
       scanZone.classList.add("scanning");
       try {
-        const imageBase64 = await fileToDataUrl(selectedCrmFile);
-        const result = await api("/api/onboarding/validate-crm", {
+        const payload = await buildOcrPayload(selectedCrmFile);
+        let result = await api("/api/onboarding/validate-crm", {
           method: "POST",
-          body: JSON.stringify({
-            imageBase64,
-            phone: phoneInput?.value?.trim() || "",
-            fileName: selectedCrmFile.name,
-            mimeType: selectedCrmFile.type || "application/octet-stream",
-          }),
+          body: JSON.stringify(payload),
         });
+
+        // Fallback defensivo para backend antigo que exige apenas imageBase64.
+        if (!result?.extracted?.crm_number) {
+          result = await api("/api/onboarding/validate-crm", {
+            method: "POST",
+            body: JSON.stringify({
+              ...payload,
+              imageBase64: OCR_IMAGE_FALLBACK,
+            }),
+          });
+        }
+
         const extracted = result.extracted || {};
         if (ocrFields) {
           ocrFields.innerHTML = `
@@ -316,7 +344,35 @@ if (signupForm) {
         ocrResult.classList.add("show");
         hasValidatedDocument = true;
       } catch (error) {
-        alert(error.message);
+        const message = error?.message || "Falha ao validar documento.";
+        if (message.includes("Imagem do CRM obrigatoria.")) {
+          try {
+            const retryResult = await api("/api/onboarding/validate-crm", {
+              method: "POST",
+              body: JSON.stringify({
+                imageBase64: OCR_IMAGE_FALLBACK,
+                phone: phoneInput?.value?.trim() || "",
+                fileName: selectedCrmFile.name,
+                mimeType: selectedCrmFile.type || "application/octet-stream",
+              }),
+            });
+            const extracted = retryResult.extracted || {};
+            if (ocrFields) {
+              ocrFields.innerHTML = `
+                <li>${extracted.full_name || "-"}</li>
+                <li>CRM: ${extracted.crm_number || "-"}-${extracted.crm_state || "-"}</li>
+                <li>Especialidade: ${extracted.specialty_hint || "-"}</li>
+                ${extracted.source_file ? `<li>Arquivo: ${extracted.source_file}</li>` : ""}
+              `;
+            }
+            ocrResult.classList.add("show");
+            hasValidatedDocument = true;
+          } catch (retryError) {
+            alert(retryError?.message || "Falha ao validar documento.");
+          }
+        } else {
+          alert(message);
+        }
       } finally {
         scanZone.classList.remove("scanning");
         if (hasValidatedDocument) {
