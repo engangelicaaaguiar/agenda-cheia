@@ -1,4 +1,6 @@
 const DOCTOR_ID_STORAGE_KEY = "dutymd_doctor_id";
+const CALENDAR_GOOGLE_STORAGE_PREFIX = "dutymd_calendar_google_connected_";
+const CALENDAR_MS_STORAGE_PREFIX = "dutymd_calendar_ms_connected_";
 
 function generateDoctorId() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -61,6 +63,34 @@ function setActiveDoctorId(nextId) {
   }
 }
 
+function getCalendarStorageKey(provider) {
+  const suffix = activeDoctorId || "anonymous";
+  if (provider === "google") return `${CALENDAR_GOOGLE_STORAGE_PREFIX}${suffix}`;
+  return `${CALENDAR_MS_STORAGE_PREFIX}${suffix}`;
+}
+
+function setCalendarConnected(provider, connected) {
+  const key = getCalendarStorageKey(provider);
+  try {
+    if (connected) {
+      localStorage.setItem(key, "1");
+      return;
+    }
+    localStorage.removeItem(key);
+  } catch {
+    // Ignora erro de storage.
+  }
+}
+
+function isCalendarConnected(provider) {
+  const key = getCalendarStorageKey(provider);
+  try {
+    return localStorage.getItem(key) === "1";
+  } catch {
+    return false;
+  }
+}
+
 const api = async (url, options = {}) => {
   const response = await fetch(url, {
     ...options,
@@ -72,7 +102,7 @@ const api = async (url, options = {}) => {
   });
   if (!response.ok) {
     const payload = await response.json().catch(() => ({}));
-    throw new Error(payload.error || "Falha na requisicao");
+    throw new Error(payload.error || "Falha na requisição");
   }
   return response.json();
 };
@@ -184,7 +214,7 @@ if (signupForm) {
   const saveStep = async (step) => {
     const stepValue = Number.parseInt(String(step), 10);
     if (!Number.isInteger(stepValue)) {
-      throw new Error("Passo de cadastro invalido.");
+      throw new Error("Passo de cadastro inválido.");
     }
     const payload = { step: stepValue, data: {} };
 
@@ -231,7 +261,7 @@ if (signupForm) {
             method: "PUT",
             body: JSON.stringify({ complete: true }),
           });
-          signupStatus.textContent = "Tudo pronto, Dr(a). Seu consultorio digital esta aberto.";
+          signupStatus.textContent = "Tudo pronto, Dr(a). Seu consultório digital está aberto.";
           signupStatus.style.color = "#166534";
         }
       } catch (error) {
@@ -371,14 +401,14 @@ function showOAuthErrorIfPresent() {
   if (!oauthError) return;
 
   const messageByCode = {
-    supabase_not_configured: "OAuth Google indisponivel: conexao Supabase nao configurada.",
+    supabase_not_configured: "OAuth Google indisponível: conexão Supabase não configurada.",
     google_provider_not_enabled:
-      "Google login nao esta habilitado no Supabase. Ative o provider Google no painel de Auth.",
+      "Google login não está habilitado no Supabase. Ative o provedor Google no painel de Auth.",
     google_missing_oauth_secret:
       "Google OAuth sem Client Secret no Supabase. Preencha Client ID e Client Secret no provider Google.",
     google_invalid_redirect_url:
-      "Redirect URL invalida no Google/Supabase. Revise as URLs autorizadas e tente novamente.",
-    google_oauth_unavailable: "Nao foi possivel iniciar o login Google agora. Tente novamente.",
+      "Redirect URL inválida no Google/Supabase. Revise as URLs autorizadas e tente novamente.",
+    google_oauth_unavailable: "Não foi possível iniciar o login Google agora. Tente novamente.",
     oauth_network_error: "Falha de rede ao iniciar o login Google. Tente novamente.",
   };
 
@@ -398,6 +428,26 @@ function parseTokenHash() {
   };
 }
 
+function clearHashFromUrl() {
+  if (!window.location.hash) return;
+  const url = new URL(window.location.href);
+  url.hash = "";
+  window.history.replaceState({}, "", url.toString());
+}
+
+function messageFromCalendarStatus(code, providerLabel) {
+  const messages = {
+    connected: `${providerLabel} conectado com sucesso.`,
+    provider_not_enabled: `${providerLabel} não está habilitado no Supabase. Ative o provedor no painel de Auth.`,
+    oauth_secret_missing: `${providerLabel} sem Client Secret configurado no Supabase.`,
+    invalid_redirect: `Redirect URL inválida para ${providerLabel}. Revise a configuração OAuth.`,
+    unavailable: `Não foi possível conectar ${providerLabel} agora. Tente novamente.`,
+    network_error: `Falha de rede ao conectar ${providerLabel}. Tente novamente.`,
+    setup_required: `Supabase não configurado para sincronizar ${providerLabel}.`,
+  };
+  return messages[code] || "";
+}
+
 async function bootstrapGoogleDoctor(accessToken) {
   const response = await fetch("/api/auth/bootstrap-doctor", {
     method: "POST",
@@ -409,7 +459,7 @@ async function bootstrapGoogleDoctor(accessToken) {
 
   const payload = await response.json().catch(() => ({}));
   if (!response.ok || !payload?.doctorId) {
-    throw new Error(payload?.error || "Falha ao preparar cadastro do medico.");
+    throw new Error(payload?.error || "Falha ao preparar cadastro do médico.");
   }
 
   return payload.doctorId;
@@ -440,6 +490,86 @@ async function handleGoogleReturnIfNeeded() {
 showOAuthErrorIfPresent();
 handleGoogleReturnIfNeeded();
 
+const agendaSyncPage = document.getElementById("agenda-sync-page");
+if (agendaSyncPage) {
+  const googleCalendarBtn = document.getElementById("google-calendar-btn");
+  const microsoftCalendarBtn = document.getElementById("microsoft-calendar-btn");
+  const googleCalendarStatus = document.getElementById("google-calendar-status");
+  const microsoftCalendarStatus = document.getElementById("microsoft-calendar-status");
+  const agendaSyncMessage = document.getElementById("agenda-sync-message");
+
+  const setStatusPill = (element, connected) => {
+    if (!element) return;
+    element.textContent = connected ? "Conectado" : "Não conectado";
+    element.classList.toggle("connected", connected);
+  };
+
+  const renderCalendarStatus = () => {
+    const googleConnected = isCalendarConnected("google");
+    const microsoftConnected = isCalendarConnected("microsoft");
+    setStatusPill(googleCalendarStatus, googleConnected);
+    setStatusPill(microsoftCalendarStatus, microsoftConnected);
+    if (agendaSyncMessage && (googleConnected || microsoftConnected)) {
+      agendaSyncMessage.textContent = "Sincronização ativa. Sua agenda será considerada no matching de oportunidades.";
+      agendaSyncMessage.style.color = "#166534";
+    }
+  };
+
+  const agendaUrl = new URL(window.location.href);
+  const calendarGoogleStatus = agendaUrl.searchParams.get("calendar_google");
+  const calendarMicrosoftStatus = agendaUrl.searchParams.get("calendar_ms");
+  const calendarGoogleReturn = agendaUrl.searchParams.get("calendar_google_return") === "1";
+  const calendarMicrosoftReturn = agendaUrl.searchParams.get("calendar_ms_return") === "1";
+  const tokenInfo = parseTokenHash();
+
+  if (calendarGoogleReturn && tokenInfo?.accessToken) {
+    setCalendarConnected("google", true);
+    clearHashFromUrl();
+  }
+  if (calendarMicrosoftReturn && tokenInfo?.accessToken) {
+    setCalendarConnected("microsoft", true);
+    clearHashFromUrl();
+  }
+
+  if (calendarGoogleStatus === "connected") setCalendarConnected("google", true);
+  if (calendarMicrosoftStatus === "connected") setCalendarConnected("microsoft", true);
+
+  if (agendaSyncMessage) {
+    const googleMessage = messageFromCalendarStatus(calendarGoogleStatus, "Google Calendar");
+    const microsoftMessage = messageFromCalendarStatus(calendarMicrosoftStatus, "Microsoft Calendar");
+    const combinedMessage = [googleMessage, microsoftMessage].filter(Boolean).join(" ");
+    if (combinedMessage) {
+      const hasError =
+        (calendarGoogleStatus && calendarGoogleStatus !== "connected") ||
+        (calendarMicrosoftStatus && calendarMicrosoftStatus !== "connected");
+      agendaSyncMessage.textContent = combinedMessage;
+      agendaSyncMessage.style.color = hasError ? "#b91c1c" : "#166534";
+    }
+  }
+
+  renderCalendarStatus();
+
+  if (googleCalendarBtn) {
+    googleCalendarBtn.addEventListener("click", () => {
+      if (agendaSyncMessage) {
+        agendaSyncMessage.textContent = "Abrindo autorização do Google Calendar...";
+        agendaSyncMessage.style.color = "#1e3a8a";
+      }
+      window.location.href = `/api/calendar/google/start?doctorId=${encodeURIComponent(activeDoctorId)}`;
+    });
+  }
+
+  if (microsoftCalendarBtn) {
+    microsoftCalendarBtn.addEventListener("click", () => {
+      if (agendaSyncMessage) {
+        agendaSyncMessage.textContent = "Abrindo autorização do Microsoft Calendar...";
+        agendaSyncMessage.style.color = "#1e3a8a";
+      }
+      window.location.href = `/api/calendar/microsoft/start?doctorId=${encodeURIComponent(activeDoctorId)}`;
+    });
+  }
+}
+
 if (emailLoginBtn && identityInput) {
   emailLoginBtn.addEventListener("click", () => {
     const email = identityInput.value.trim();
@@ -454,7 +584,7 @@ if (emailLoginBtn && identityInput) {
 
 if (googleLoginBtn) {
   googleLoginBtn.addEventListener("click", () => {
-    setAuthHintMessage("Redirecionando para autenticacao Google...");
+    setAuthHintMessage("Redirecionando para autenticação Google...");
     window.location.href = "/api/auth/google-start";
   });
 }

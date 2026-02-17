@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>DutyMD | Onboarding Medico</title>
+    <title>DutyMD | Onboarding Médico</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -17,11 +17,11 @@
       <section class="brand-panel">
         <div class="logo-row">
           <strong class="logo">DutyMD</strong>
-          <span class="security">Seguranca LGPD</span>
+          <span class="security">Segurança LGPD</span>
         </div>
-        <h1>Validacao profissional com zero atrito.</h1>
+        <h1>Validação profissional com zero atrito.</h1>
         <p>
-          Salvamento incremental: voce pode sair e voltar sem perder o progresso do cadastro.
+          Salvamento incremental: você pode sair e voltar sem perder o progresso do cadastro.
         </p>
         <div class="state-badges">
           <span>Upload de documentos</span>
@@ -41,19 +41,19 @@
           <form id="signup-form">
             <article class="step active" data-step="1">
               <h2>Passo 1: envio de documentos</h2>
-              <p>Digite seu WhatsApp e anexe seus documentos. A validacao OCR ficara pendente.</p>
-              <label for="phone">Numero de celular (WhatsApp)</label>
+              <p>Digite seu WhatsApp e anexe seus documentos. A validação OCR ficará pendente.</p>
+              <label for="phone">Número de celular (WhatsApp)</label>
               <input id="phone" name="phone" placeholder="(11) 99999-9999" required />
 
-              <label for="crm-file">Documento para validacao (imagem ou PDF)</label>
+              <label for="crm-file">Documento para validação (imagem ou PDF)</label>
               <input id="crm-file" name="crm-file" type="file" accept="image/*,.pdf" multiple required />
               <p class="hint" id="crm-file-name">Nenhum arquivo selecionado.</p>
 
               <div class="scan-zone" id="scan-zone">
                 <div class="scan-line"></div>
                 <div>
-                  <strong>Documentos recebidos para analise</strong>
-                  <p class="hint">O OCR sera executado em etapa posterior. Continue o cadastro agora.</p>
+                  <strong>Documentos recebidos para análise</strong>
+                  <p class="hint">O OCR será executado em etapa posterior. Continue o cadastro agora.</p>
                 </div>
               </div>
 
@@ -64,7 +64,7 @@
               </div>
 
               <div class="ocr-result" id="ocr-result">
-                <strong>Documentos enviados para analise pendente:</strong>
+                <strong>Documentos enviados para análise pendente:</strong>
                 <ul id="ocr-fields"></ul>
               </div>
             </article>
@@ -88,7 +88,7 @@
               <h2>Passo 3: disponibilidade</h2>
               <p>Selecione blocos da agenda semanal. Isso alimenta o match inteligente.</p>
               <div class="availability-grid" id="availability-grid"></div>
-              <p class="hint">Opcional: importar Google Calendar no proximo ciclo.</p>
+              <p class="hint">Opcional: importar Google Calendar no próximo ciclo.</p>
 
               <div class="actions">
                 <button class="btn btn-primary" type="button" data-next-step="4">Finalizar</button>
@@ -98,11 +98,11 @@
 
             <article class="step" data-step="4">
               <h2>Passo 4: pronto</h2>
-              <p class="success-mark">Tudo pronto, Dr(a). Seu perfil esta visivel para empresas.</p>
-              <p class="hint">A validacao OCR dos documentos foi marcada como pendente para revisao.</p>
+              <p class="success-mark">Tudo pronto, Dr(a). Seu perfil está visível para empresas.</p>
+              <p class="hint">A validação OCR dos documentos foi marcada como pendente para revisão.</p>
               <p class="inline-status" id="signup-status">Sincronizando sua agenda...</p>
               <div class="actions">
-                <a class="btn btn-primary" href="./login.html">Ir para login</a>
+                <a class="btn btn-primary" href="./agenda.html">Configurar agenda</a>
               </div>
             </article>
           </form>

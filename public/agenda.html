@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DutyMD | Configuração de agenda</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./auth.css" />
+  </head>
+  <body>
+    <main class="auth-layout" id="agenda-sync-page">
+      <section class="brand-panel">
+        <div class="logo-row">
+          <strong class="logo">DutyMD</strong>
+          <span class="security">Agenda inteligente</span>
+        </div>
+        <h1>Configure sua agenda profissional em poucos cliques.</h1>
+        <p>
+          Conecte seus calendários para reduzir conflitos e receber oportunidades compatíveis com seus horários
+          reais.
+        </p>
+        <div class="state-badges">
+          <span>Google Calendar</span>
+          <span>Microsoft Office 365</span>
+          <span>Sincronização segura</span>
+        </div>
+      </section>
+
+      <section class="flow-panel">
+        <div class="card">
+          <a class="top-back" href="./cadastro.html">Voltar para cadastro</a>
+          <h2>Sincronização de calendário</h2>
+          <p>Conecte uma ou duas contas para manter sua disponibilidade sempre atualizada.</p>
+
+          <div class="sync-stack">
+            <article class="sync-card">
+              <div class="sync-head">
+                <div>
+                  <strong>Google Calendar</strong>
+                  <p>Integre compromissos e bloqueios da sua conta Google.</p>
+                </div>
+                <span class="status-pill" id="google-calendar-status">Não conectado</span>
+              </div>
+              <button class="btn btn-primary" id="google-calendar-btn" type="button">Conectar Google Calendar</button>
+            </article>
+
+            <article class="sync-card">
+              <div class="sync-head">
+                <div>
+                  <strong>Microsoft Office Calendar</strong>
+                  <p>Sincronize eventos do Outlook / Microsoft 365.</p>
+                </div>
+                <span class="status-pill" id="microsoft-calendar-status">Não conectado</span>
+              </div>
+              <button class="btn btn-secondary" id="microsoft-calendar-btn" type="button">
+                Conectar Microsoft Calendar
+              </button>
+            </article>
+          </div>
+
+          <p class="inline-status" id="agenda-sync-message">Conecte ao menos um calendário para maior precisão no matching.</p>
+          <div class="actions">
+            <a class="btn btn-primary" href="./login.html">Continuar para login</a>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script src="./auth.js" defer></script>
+  </body>
+</html>

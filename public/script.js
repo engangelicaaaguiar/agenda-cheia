@@ -1,6 +1,6 @@
 const opportunities = [
   "Empresas buscando Cardiologistas agora",
-  "Alta demanda para Clinica Geral neste turno",
+  "Alta demanda para Clínica Geral neste turno",
   "Psiquiatria com agendas abertas hoje",
   "Dermatologia com chamadas em menos de 30 minutos",
 ];

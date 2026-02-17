@@ -185,6 +185,125 @@ app.get("/api/auth/google-start", async (req, res) => {
   }
 });
 
+app.get("/api/calendar/google/start", async (req, res) => {
+  const doctorId = getDoctorId(req);
+  const agendaReturnParams = new URLSearchParams({
+    calendar_google_return: "1",
+    doctorId,
+  });
+
+  if (!supabaseEnabled || !process.env.SUPABASE_URL) {
+    return res.redirect(`/agenda.html?doctorId=${encodeURIComponent(doctorId)}&calendar_google=setup_required`);
+  }
+
+  const origin = getRequestOrigin(req);
+  const redirectTo = `${origin}/agenda.html?${agendaReturnParams.toString()}`;
+  const oauthUrl = new URL("/auth/v1/authorize", process.env.SUPABASE_URL);
+  oauthUrl.searchParams.set("provider", "google");
+  oauthUrl.searchParams.set("flow_type", "implicit");
+  oauthUrl.searchParams.set("redirect_to", redirectTo);
+  oauthUrl.searchParams.set(
+    "scopes",
+    "openid email profile https://www.googleapis.com/auth/calendar.readonly",
+  );
+
+  try {
+    const probe = await fetch(oauthUrl.toString(), { redirect: "manual" });
+    const locationHeader = probe.headers.get("location");
+
+    if (probe.status >= 300 && probe.status < 400 && locationHeader) {
+      const nextUrl = locationHeader.startsWith("http")
+        ? locationHeader
+        : new URL(locationHeader, process.env.SUPABASE_URL).toString();
+      return res.redirect(nextUrl);
+    }
+
+    const payload = await probe.text();
+    let normalizedMessage = payload;
+
+    try {
+      const parsed = JSON.parse(payload);
+      normalizedMessage = `${parsed?.msg || ""} ${parsed?.error_code || ""}`.trim();
+    } catch {
+      // Mantem o payload textual.
+    }
+
+    if (normalizedMessage.includes("provider is not enabled")) {
+      return res.redirect(`/agenda.html?doctorId=${encodeURIComponent(doctorId)}&calendar_google=provider_not_enabled`);
+    }
+
+    if (normalizedMessage.includes("missing OAuth secret")) {
+      return res.redirect(`/agenda.html?doctorId=${encodeURIComponent(doctorId)}&calendar_google=oauth_secret_missing`);
+    }
+
+    if (normalizedMessage.toLowerCase().includes("redirect") && normalizedMessage.toLowerCase().includes("invalid")) {
+      return res.redirect(`/agenda.html?doctorId=${encodeURIComponent(doctorId)}&calendar_google=invalid_redirect`);
+    }
+
+    return res.redirect(`/agenda.html?doctorId=${encodeURIComponent(doctorId)}&calendar_google=unavailable`);
+  } catch {
+    return res.redirect(`/agenda.html?doctorId=${encodeURIComponent(doctorId)}&calendar_google=network_error`);
+  }
+});
+
+app.get("/api/calendar/microsoft/start", async (req, res) => {
+  const doctorId = getDoctorId(req);
+  const agendaReturnParams = new URLSearchParams({
+    calendar_ms_return: "1",
+    doctorId,
+  });
+
+  if (!supabaseEnabled || !process.env.SUPABASE_URL) {
+    return res.redirect(`/agenda.html?doctorId=${encodeURIComponent(doctorId)}&calendar_ms=setup_required`);
+  }
+
+  const origin = getRequestOrigin(req);
+  const redirectTo = `${origin}/agenda.html?${agendaReturnParams.toString()}`;
+  const oauthUrl = new URL("/auth/v1/authorize", process.env.SUPABASE_URL);
+  oauthUrl.searchParams.set("provider", "azure");
+  oauthUrl.searchParams.set("flow_type", "implicit");
+  oauthUrl.searchParams.set("redirect_to", redirectTo);
+  oauthUrl.searchParams.set("scopes", "openid profile email offline_access User.Read Calendars.ReadWrite");
+
+  try {
+    const probe = await fetch(oauthUrl.toString(), { redirect: "manual" });
+    const locationHeader = probe.headers.get("location");
+
+    if (probe.status >= 300 && probe.status < 400 && locationHeader) {
+      const nextUrl = locationHeader.startsWith("http")
+        ? locationHeader
+        : new URL(locationHeader, process.env.SUPABASE_URL).toString();
+      return res.redirect(nextUrl);
+    }
+
+    const payload = await probe.text();
+    let normalizedMessage = payload;
+
+    try {
+      const parsed = JSON.parse(payload);
+      normalizedMessage = `${parsed?.msg || ""} ${parsed?.error_code || ""}`.trim();
+    } catch {
+      // Mantem o payload textual.
+    }
+
+    if (normalizedMessage.includes("provider is not enabled")) {
+      return res.redirect(`/agenda.html?doctorId=${encodeURIComponent(doctorId)}&calendar_ms=provider_not_enabled`);
+    }
+
+    if (normalizedMessage.includes("missing OAuth secret")) {
+      return res.redirect(`/agenda.html?doctorId=${encodeURIComponent(doctorId)}&calendar_ms=oauth_secret_missing`);
+    }
+
+    if (normalizedMessage.toLowerCase().includes("redirect") && normalizedMessage.toLowerCase().includes("invalid")) {
+      return res.redirect(`/agenda.html?doctorId=${encodeURIComponent(doctorId)}&calendar_ms=invalid_redirect`);
+    }
+
+    return res.redirect(`/agenda.html?doctorId=${encodeURIComponent(doctorId)}&calendar_ms=unavailable`);
+  } catch {
+    return res.redirect(`/agenda.html?doctorId=${encodeURIComponent(doctorId)}&calendar_ms=network_error`);
+  }
+});
+
 app.post("/api/auth/bootstrap-doctor", async (req, res, next) => {
   try {
     if (!supabaseEnabled || !supabaseAdmin) {
