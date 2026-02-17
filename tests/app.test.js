@@ -8,7 +8,7 @@ describe("App routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers["content-type"]).toContain("text/html");
-    expect(response.text).toContain("Uma unica plataforma. Tres jornadas coerentes.");
+    expect(response.text).toContain("Uma única plataforma. Três jornadas coerentes.");
   });
 
   it("deve retornar HTML da jornada de primeiro login", async () => {
@@ -16,7 +16,7 @@ describe("App routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers["content-type"]).toContain("text/html");
-    expect(response.text).toContain("Validacao profissional com zero atrito.");
+    expect(response.text).toContain("Validação profissional com zero atrito.");
   });
 
   it("deve retornar HTML da jornada de login recorrente", async () => {
